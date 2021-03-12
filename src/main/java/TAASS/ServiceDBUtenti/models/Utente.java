@@ -28,12 +28,25 @@ public class Utente {
     @Column(name="comune_residenza")
     private long comuneResidenza;
 
-    public Utente(String nome, String cognome, String cf, String telefono, long comuneResidenza) {
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "ruolo")
+    private String ruolo;
+
+    public Utente(String nome, String cognome, String cf, String telefono, long comuneResidenza, String email,
+                  String password, String ruolo) {
         this.nome = nome;
         this.cognome = cognome;
         this.cf = cf;
         this.telefono = telefono;
         this.comuneResidenza = comuneResidenza;
+        this.email = email;
+        this.password = password;
+        this.ruolo = ruolo;
     }
 
     public Utente() {
@@ -89,5 +102,27 @@ public class Utente {
         this.comuneResidenza = comuneResidenza;
     }
 
+    public String getEmail() {
+        return email;
+    }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRuolo() {
+        return ruolo;
+    }
+
+    public void setRuolo(String ruolo) {
+        this.ruolo = ruolo;
+    }
 }

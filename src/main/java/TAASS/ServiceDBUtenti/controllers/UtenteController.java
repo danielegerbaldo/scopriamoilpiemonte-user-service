@@ -1,5 +1,6 @@
 package TAASS.ServiceDBUtenti.controllers;
 
+import TAASS.ServiceDBUtenti.classiComode.RichiestaLogin;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,22 @@ public class UtenteController {
 
     @PostMapping
     public Utente postUtente(@RequestBody Utente utente){
-        Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(), utente.getTelefono(), utente.getComuneResidenza()));
+        Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(),
+                utente.getTelefono(), utente.getComuneResidenza(), utente.getEmail(), utente.getPassword(),
+                utente.getRuolo()));
         return nuovoUtente;
+    }
+
+    //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
+    @GetMapping("/login")
+    public ResponseEntity<String> fakeLogin(@RequestBody RichiestaLogin richiestaLogin){
+        List<Utente> utenti = utenteRepository.findByEmail();
+        if(utenti.size() > 0 && utenti.get(0).getPassword().equals(richiestaLogin.getPassword())){
+            //non esiste un utente con quella mail
+            return new ResponseEntity<>(utenti.get(0).getRuolo(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("Errore Login", HttpStatus.FORBIDDEN);
+        }
     }
 
     @DeleteMapping("/deleteAll")

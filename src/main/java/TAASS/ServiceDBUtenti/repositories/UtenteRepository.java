@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface UtenteRepository extends JpaRepository<Utente, Long> {
     List<Utente> findByNome(String nome);
+
+    List<Utente> findByEmail();
 }
