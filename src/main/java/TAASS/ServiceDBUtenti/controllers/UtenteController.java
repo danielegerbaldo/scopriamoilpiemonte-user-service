@@ -35,8 +35,10 @@ public class UtenteController {
     }
 
     //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
-    @GetMapping("/login")
+    //@GetMapping("/login")
+    @RequestMapping(value="/login",method = RequestMethod.GET)
     public ResponseEntity<String> fakeLogin(@RequestBody RichiestaLogin richiestaLogin){
+        System.out.println(">richiesta login: p:" + richiestaLogin.getPassword() + "; e: " + richiestaLogin.getEmail());
         List<Utente> utenti = utenteRepository.findByEmail(richiestaLogin.getEmail());
         if(utenti.size() > 0 && utenti.get(0).getPassword().equals(richiestaLogin.getPassword())){
             //non esiste un utente con quella mail
