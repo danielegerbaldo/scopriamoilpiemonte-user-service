@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +38,10 @@ public class UtenteController {
     }
 
     //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
-    @GetMapping("/login")
+    @PostMapping("/login")
     //@RequestMapping(value="/login",method = RequestMethod.GET)
-    public ResponseEntity<String> fakeLogin(/*@RequestParam RichiestaLogin richiestaLogin*/ @RequestParam Map<String, String> richiesta){
+    public ResponseEntity<String> fakeLogin(/*@RequestParam RichiestaLogin richiestaLogin*/ /*@RequestParam Map<String, String> richiesta*/
+        @RequestBody RichiestaLogin richiestaLogin){
         /*System.out.println(">richiesta login: p:" + richiestaLogin.getPassword() + "; e: " + richiestaLogin.getEmail());
         List<Utente> utenti = utenteRepository.findByEmail(richiestaLogin.getEmail());
         if(utenti.size() > 0 && utenti.get(0).getPassword().equals(richiestaLogin.getPassword())){
@@ -48,8 +50,8 @@ public class UtenteController {
         }else{
             return new ResponseEntity<>("Errore Login", HttpStatus.FORBIDDEN);
         }*/
-        System.out.println(">richiesta login: p:" + richiesta);
-        System.out.println(">richiesta login: p:" + richiesta.get("password"));
+        System.out.println(">richiesta login: p:" + richiestaLogin.getPassword());
+        System.out.println(">richiesta login: e:" + richiestaLogin.getEmail());
         return new ResponseEntity<>("????", HttpStatus.OK);
     }
 
