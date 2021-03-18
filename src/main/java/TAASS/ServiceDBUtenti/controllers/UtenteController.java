@@ -3,7 +3,9 @@ package TAASS.ServiceDBUtenti.controllers;
 import TAASS.ServiceDBUtenti.classiComode.RichiestaLogin;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,9 +52,18 @@ public class UtenteController {
         }else{
             return new ResponseEntity<>("Errore Login", HttpStatus.FORBIDDEN);
         }*/
-        System.out.println(">richiesta login: p:" + richiestaLogin.getPassword());
-        System.out.println(">richiesta login: e:" + richiestaLogin.getEmail());
-        return new ResponseEntity<>("????", HttpStatus.OK);
+        System.out.println(">richiesta login: p: " + richiestaLogin.getPassword());
+        System.out.println(">richiesta login: e: " + richiestaLogin.getEmail());
+        String risposta = "li mortacci tua";
+        Gson gson = new Gson();
+        risposta = gson.toJson(risposta);
+        //GsonJsonParser a = new GsonJsonParser();
+        ResponseEntity<String> responseEntity = new ResponseEntity<>(risposta, HttpStatus.OK);
+        System.out.println(">richiesta login: r: " + responseEntity.toString());
+        System.out.println(">richiesta login: r: b: " + responseEntity.getBody());
+        System.out.println(">richiesta login: r: h: " + responseEntity.getHeaders());
+
+        return responseEntity;
     }
 
     @DeleteMapping("/deleteAll")
