@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -23,6 +24,7 @@ public class UtenteController {
         //System.out.println("restituisco tutti gli utenti");
         List<Utente> utenti = new ArrayList<>();
         utenteRepository.findAll().forEach(utenti::add);
+        System.out.println(">richiesta lista utenti, quantita' trovata: " + utenti.size());
         return utenti;
     }
 
@@ -35,17 +37,20 @@ public class UtenteController {
     }
 
     //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
-    //@GetMapping("/login")
-    @RequestMapping(value="/login",method = RequestMethod.GET)
-    public ResponseEntity<String> fakeLogin(@RequestBody RichiestaLogin richiestaLogin){
-        System.out.println(">richiesta login: p:" + richiestaLogin.getPassword() + "; e: " + richiestaLogin.getEmail());
+    @GetMapping("/login")
+    //@RequestMapping(value="/login",method = RequestMethod.GET)
+    public ResponseEntity<String> fakeLogin(/*@RequestParam RichiestaLogin richiestaLogin*/ @RequestParam Map<String, String> richiesta){
+        /*System.out.println(">richiesta login: p:" + richiestaLogin.getPassword() + "; e: " + richiestaLogin.getEmail());
         List<Utente> utenti = utenteRepository.findByEmail(richiestaLogin.getEmail());
         if(utenti.size() > 0 && utenti.get(0).getPassword().equals(richiestaLogin.getPassword())){
             //non esiste un utente con quella mail
             return new ResponseEntity<>(utenti.get(0).getRuolo(), HttpStatus.OK);
         }else{
             return new ResponseEntity<>("Errore Login", HttpStatus.FORBIDDEN);
-        }
+        }*/
+        System.out.println(">richiesta login: p:" + richiesta);
+        System.out.println(">richiesta login: p:" + richiesta.get("password"));
+        return new ResponseEntity<>("????", HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteAll")
