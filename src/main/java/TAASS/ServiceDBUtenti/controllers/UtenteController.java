@@ -11,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.annotation.RequestScope;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/utente")
@@ -31,40 +28,91 @@ public class UtenteController {
         return utenti;
     }
 
-    @PostMapping
+    /*@PostMapping
     public Utente postUtente(@RequestBody Utente utente){
         Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(),
                 utente.getTelefono(), utente.getComuneResidenza(), utente.getEmail(), utente.getPassword(),
                 utente.getRuolo()));
         return nuovoUtente;
+    }*/
+
+    @PostMapping
+    public ResponseEntity<Map<String, String>> postUtente(@RequestBody Map<String, String> datiUtente){
+        Utente nuovoUtente = new Utente(datiUtente.get("nome"), datiUtente.get("cognome"), datiUtente.getOrDefault("cf", ""),
+                datiUtente.getOrDefault("tel", ""), 1, datiUtente.get("email"), datiUtente.get("password"),
+                datiUtente.getOrDefault("ruolo", "normale"), Long.parseLong(datiUtente.getOrDefault("comune", "-1").toString()));
+        System.out.println(">registrazione nuovo utente: ");
+        System.out.println("\t>e: " + datiUtente.get("email"));
+        System.out.println("\t>n: " + datiUtente.get("nome"));
+        System.out.println("\t>r: " + datiUtente.getOrDefault("ruolo", "normale"));
+        nuovoUtente = utenteRepository.save(nuovoUtente);
+        Map<String, String> risposta = new HashMap<>();
+        risposta.put("risposta", "registrazione avvenuta con successo");
+        return  new ResponseEntity<Map<String, String>>(risposta, HttpStatus.OK);
     }
 
     //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
     @PostMapping("/login")
-    //@RequestMapping(value="/login",method = RequestMethod.GET)
-    public ResponseEntity<String> fakeLogin(/*@RequestParam RichiestaLogin richiestaLogin*/ /*@RequestParam Map<String, String> richiesta*/
-        @RequestBody RichiestaLogin richiestaLogin){
-        /*System.out.println(">richiesta login: p:" + richiestaLogin.getPassword() + "; e: " + richiestaLogin.getEmail());
-        List<Utente> utenti = utenteRepository.findByEmail(richiestaLogin.getEmail());
-        if(utenti.size() > 0 && utenti.get(0).getPassword().equals(richiestaLogin.getPassword())){
-            //non esiste un utente con quella mail
-            return new ResponseEntity<>(utenti.get(0).getRuolo(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("Errore Login", HttpStatus.FORBIDDEN);
-        }*/
-        System.out.println(">richiesta login: p: " + richiestaLogin.getPassword());
-        System.out.println(">richiesta login: e: " + richiestaLogin.getEmail());
-        String risposta = "li mortacci tua";
+    public ResponseEntity<String> fakeLogin(@RequestBody Map<String, String> richiestaLogin){
+        String email = richiestaLogin.get("email").toString().trim();
+        String password = richiestaLogin.get("password").toString().trim();
+        System.out.println(">richiesta login: p: " + password);
+        System.out.println(">richiesta login: e: " + email);
+        List<Utente> utenti = utenteRepository.findByEmail(email);
+        System.out.println(">utenti trovati: " + utenti.size());
         Gson gson = new Gson();
-        risposta = gson.toJson(risposta);
-        //GsonJsonParser a = new GsonJsonParser();
-        ResponseEntity<String> responseEntity = new ResponseEntity<>(risposta, HttpStatus.OK);
-        System.out.println(">richiesta login: r: " + responseEntity.toString());
-        System.out.println(">richiesta login: r: b: " + responseEntity.getBody());
-        System.out.println(">richiesta login: r: h: " + responseEntity.getHeaders());
-
+        ResponseEntity<String> responseEntity;
+        if(utenti.size() == 1){
+            responseEntity = new ResponseEntity<>(gson.toJson(utenti.get(0)), HttpStatus.OK);
+        }else{
+            responseEntity = new ResponseEntity<>(gson.toJson(null), HttpStatus.NOT_FOUND);
+        }
         return responseEntity;
     }
+
+    /*@PostMapping("/login")
+    public ResponseEntity<String> fakeLogin(@RequestBody Map richiestaLogin){
+        String email = richiestaLogin.get("email").toString().trim();
+        String password = richiestaLogin.get("password").toString().trim();
+        System.out.println(">richiesta login: p: " + password);
+        System.out.println(">richiesta login: e: " + email);
+        List<Utente> utenti = utenteRepository.findByEmail(email);
+        System.out.println(">utenti trovati: " + utenti.size());
+        Map<String, String> risposta = new HashMap<>();
+        Gson gson = new Gson();
+        ResponseEntity<String> responseEntity;
+        if(utenti.size() == 1){
+            if(utenti.get(0).getPassword().equals(password)){
+                System.out.println(">Ho trovato una corrispondenza");
+                Utente utente = utenti.get(0);
+                risposta.put("nome", utente.getNome());
+                risposta.put("cognome", utente.getCognome());
+                risposta.put("ruolo", utente.getRuolo());
+                risposta.put("utente_id", String.valueOf(utente.getId()));
+                if(utente.getRuolo().equals("sindaco")){
+                    risposta.put("comune_id", String.valueOf(utente.getComune()));
+                }
+                responseEntity = new ResponseEntity<>(gson.toJson(risposta), HttpStatus.OK);
+            }else{
+                System.out.println(">NON ho trovato una corrispondenza");
+                System.out.println(">utenti trovati: ");
+                risposta.put("errore", "utente o password sconosciuta");
+                responseEntity =  new ResponseEntity<>(gson.toJson(risposta), HttpStatus.BAD_REQUEST);
+            }
+        }else{
+            System.out.println(">NON ho trovato una corrispondenza");
+            System.out.println(">utenti trovati: ");
+            risposta.put("errore", "utente o password sconosciuta");
+            responseEntity =  new ResponseEntity<>(gson.toJson(risposta), HttpStatus.BAD_REQUEST);
+        }
+
+        System.out.println(">Response:");
+        System.out.println("\t$ c: " + responseEntity.getStatusCode() + " = " + responseEntity.getStatusCodeValue());
+        System.out.println("\t$ h: " + responseEntity.getHeaders());
+        System.out.println("\t$ b: " + responseEntity.getBody());
+        System.out.println();
+        return responseEntity;
+    }*/
 
     @DeleteMapping("/deleteAll")
     public ResponseEntity<String> rimuoviTuttiUtenti(){
