@@ -70,50 +70,6 @@ public class UtenteController {
         return responseEntity;
     }
 
-    /*@PostMapping("/login")
-    public ResponseEntity<String> fakeLogin(@RequestBody Map richiestaLogin){
-        String email = richiestaLogin.get("email").toString().trim();
-        String password = richiestaLogin.get("password").toString().trim();
-        System.out.println(">richiesta login: p: " + password);
-        System.out.println(">richiesta login: e: " + email);
-        List<Utente> utenti = utenteRepository.findByEmail(email);
-        System.out.println(">utenti trovati: " + utenti.size());
-        Map<String, String> risposta = new HashMap<>();
-        Gson gson = new Gson();
-        ResponseEntity<String> responseEntity;
-        if(utenti.size() == 1){
-            if(utenti.get(0).getPassword().equals(password)){
-                System.out.println(">Ho trovato una corrispondenza");
-                Utente utente = utenti.get(0);
-                risposta.put("nome", utente.getNome());
-                risposta.put("cognome", utente.getCognome());
-                risposta.put("ruolo", utente.getRuolo());
-                risposta.put("utente_id", String.valueOf(utente.getId()));
-                if(utente.getRuolo().equals("sindaco")){
-                    risposta.put("comune_id", String.valueOf(utente.getComune()));
-                }
-                responseEntity = new ResponseEntity<>(gson.toJson(risposta), HttpStatus.OK);
-            }else{
-                System.out.println(">NON ho trovato una corrispondenza");
-                System.out.println(">utenti trovati: ");
-                risposta.put("errore", "utente o password sconosciuta");
-                responseEntity =  new ResponseEntity<>(gson.toJson(risposta), HttpStatus.BAD_REQUEST);
-            }
-        }else{
-            System.out.println(">NON ho trovato una corrispondenza");
-            System.out.println(">utenti trovati: ");
-            risposta.put("errore", "utente o password sconosciuta");
-            responseEntity =  new ResponseEntity<>(gson.toJson(risposta), HttpStatus.BAD_REQUEST);
-        }
-
-        System.out.println(">Response:");
-        System.out.println("\t$ c: " + responseEntity.getStatusCode() + " = " + responseEntity.getStatusCodeValue());
-        System.out.println("\t$ h: " + responseEntity.getHeaders());
-        System.out.println("\t$ b: " + responseEntity.getBody());
-        System.out.println();
-        return responseEntity;
-    }*/
-
     @DeleteMapping("/deleteAll")
     public ResponseEntity<String> rimuoviTuttiUtenti(){
         utenteRepository.deleteAll();
