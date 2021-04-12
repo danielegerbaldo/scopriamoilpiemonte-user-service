@@ -6,7 +6,6 @@
 	<artifactId>utenti</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<description>Parte del progetto per gestire il database degli utenti</description>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -14,21 +13,18 @@
 		<relativePath/>
 		<!-- lookup parent from repository -->
 	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<java.version>8</java.version>
+		<java.version>11</java.version>
 		<start-class>TAASS.ServiceDBUtenti.ServiceDbUtentiApplication</start-class>
 	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -59,18 +55,15 @@
 			<artifactId>gson</artifactId>
 			<version>2.8.6</version>
 		</dependency>
-	</dependencies>
 
+		<!--<dependency>
+			<groupId>TAASS</groupId>
+			<artifactId>eventi</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>-->
+	</dependencies>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12.4</version>
-				<configuration>
-					<skipTests>true</skipTests>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -86,7 +79,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2-beta-5</version>
@@ -111,8 +103,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
-
 </project>
