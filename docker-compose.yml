@@ -1,15 +1,5 @@
 version: "3.7"
 services:
-   db-eventi:
-      image: postgres:latest
-      environment:
-          POSTGRES_USER: poi
-          POSTGRES_PASSWORD: poi
-          POSTGRES_DB: Piemonte      
-      volumes:
-         - db-eventi
-      ports:
-         - "5432:5432"
 
    db-utenti:
      image: postgres:latest
@@ -33,36 +23,21 @@ services:
         volumes:
             - pgadmin:/var/lib/pgadmin
         depends_on:
-            - db-eventi
+            - db-utenti
    
-   #dichiarazione dei servizi della app
-   
-#   servizio-eventi:
-#      image: eventi:0.0.1-SNAPSHOT
-#      container_name: servizio-eventi
-#      expose:
-#         - 8080
-#      ports:
-#         - 8080:8080
-#      volumes:
-#         - servizio-eventi:/usr/app/
-
-#   servizio-utenti:
-#     image: utenti:0.0.1-SNAPSHOT
-#     container_name: servizio-utenti
-#     expose:
-#       - 9090
-#     ports:
-#       - 9090:9090
-#     volumes:
-#       - servizio-utenti:/usr/app/
+   servizio-utenti:
+     image: utenti:0.0.1-SNAPSHOT
+     container_name: servizio-utenti
+     expose:
+       - 9090
+     ports:
+       - 9090:9090
+     volumes:
+       - servizio-utenti:/usr/app/
 
    
 
 volumes:
    db-utenti:
-   db-eventi:
    pgadmin:
-   #db-sondaggi:
-   #servizio-eventi:
-   #servizio-utenti:
+   servizio-utenti:
