@@ -1,22 +1,70 @@
 package TAASS.ServiceDBUtenti.controllers;
 
-import TAASS.ServiceDBUtenti.classiComode.RichiestaLogin;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
+import TAASS.ServiceDBUtenti.requests.LoginRequest;
+import TAASS.ServiceDBUtenti.requests.SignUpRequest;
+import TAASS.ServiceDBUtenti.response.LoginResponse;
+import TAASS.ServiceDBUtenti.services.SecureUserService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.annotation.RequestScope;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/utente")
 public class UtenteController {
-    @Autowired
+
+    private SecureUserService userService;
+
+    public UtenteController(SecureUserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping(value = "/login")
+    public ResponseEntity<LoginResponse> login(HttpServletRequest requestHeader, @RequestBody LoginRequest request) throws RuntimeException {
+        //login dell'utente in maniera sicura
+        System.out.println("controller.login: email: " + request.getEmail());
+        LoginResponse loginResponse = userService.login(request.getEmail(), request.getPassword());
+        if(loginResponse == null){
+            throw new RuntimeException("Login failed. Possible cause : incorrect username/password");
+        }else{
+            return new ResponseEntity<>(loginResponse, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping(value = "/signUp")
+    public ResponseEntity<Utente> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
+        //registrazione dell'utente
+        Utente user;
+        try {
+            user = userService.signUp(request);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @GetMapping(value = "/getAllUser")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<Utente>> getAllUser() throws RuntimeException {
+        try {
+            return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
+        } catch (Exception e) {
+            throw e;
+        }
+
+    }
+
+
+    /*@Autowired
     private UtenteRepository utenteRepository;
 
     @GetMapping
@@ -26,8 +74,7 @@ public class UtenteController {
         utenteRepository.findAll().forEach(utenti::add);
         System.out.println(">richiesta lista utenti, quantita' trovata: " + utenti.size());
         return utenti;
-    }
-
+    }*/
     /*@PostMapping
     public Utente postUtente(@RequestBody Utente utente){
         Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(),
@@ -35,7 +82,7 @@ public class UtenteController {
                 utente.getRuolo()));
         return nuovoUtente;
     }*/
-
+    /*
     @PostMapping
     public ResponseEntity<Map<String, String>> postUtente(@RequestBody Map<String, String> datiUtente){
         Utente nuovoUtente = new Utente(datiUtente.get("nome"), datiUtente.get("cognome"), datiUtente.getOrDefault("cf", ""),
@@ -103,5 +150,5 @@ public class UtenteController {
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
+    }*/
 }

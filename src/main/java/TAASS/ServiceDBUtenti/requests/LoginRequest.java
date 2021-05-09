@@ -5,11 +5,11 @@ public class LoginRequest {
     private String email;
     private String password;
 
-    public String getUserName() {
+    public String getEmail() {
         return email;
     }
 
-    public void setUserName(String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 

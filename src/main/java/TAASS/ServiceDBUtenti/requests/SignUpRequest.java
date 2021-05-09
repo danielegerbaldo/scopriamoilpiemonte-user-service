@@ -10,7 +10,26 @@ public class SignUpRequest {
     private String password;
     private String nome;
     private String cognome;
+    private String cf;
+    private String telefono;
+    private Long comuneResidenza;
     private List<Role> roles;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public String getNome() {
         return nome;
@@ -28,20 +47,28 @@ public class SignUpRequest {
         this.cognome = cognome;
     }
 
-    public String getEmail() {
-        return email;
+    public String getCf() {
+        return cf;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCf(String cf) {
+        this.cf = cf;
     }
 
-    public String getPassword() {
-        return password;
+    public String getTelefono() {
+        return telefono;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public Long getComuneResidenza() {
+        return comuneResidenza;
+    }
+
+    public void setComuneResidenza(Long comuneResidenza) {
+        this.comuneResidenza = comuneResidenza;
     }
 
     public List<Role> getRoles() {
