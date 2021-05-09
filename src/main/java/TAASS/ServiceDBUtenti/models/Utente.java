@@ -8,6 +8,8 @@ import javax.persistence.*;
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "utente")
+//tutto da cancellare
+
 public class Utente {
     //dichiarazione elementi tabella
     @Id
