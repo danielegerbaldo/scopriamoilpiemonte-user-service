@@ -1,6 +1,7 @@
 package TAASS.ServiceDBUtenti.services;
 
 import TAASS.ServiceDBUtenti.exception.MyCustomException;
+import TAASS.ServiceDBUtenti.models.Role;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
 import TAASS.ServiceDBUtenti.requests.SignUpRequest;
@@ -12,9 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -103,6 +106,12 @@ public class SecureUserService /*implements ISecureUserService*/ {
     //@Override
     public List<Utente> getAllUser() {
         return secureUserRepository.findAll();
+    }
+
+
+    public Role getAuth(String token){
+        System.out.println("name: " + jwtTokenProviderService.validateUserAndGetAuthentication(token).getName());
+        return (Role)jwtTokenProviderService.validateUserAndGetAuthentication(token).getAuthorities().toArray()[0];
     }
 
     //@Override

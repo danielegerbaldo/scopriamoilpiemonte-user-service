@@ -60,8 +60,25 @@ public class UtenteController {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+
+    @GetMapping(value = "/getAuth")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> getAuth(HttpServletRequest request) throws RuntimeException {
+        //System.out.println("getAuth");
+        String bearerToken = request.getHeader("Authorization");
+        //System.out.println("Authorization: " + bearerToken);
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            bearerToken = bearerToken.substring(7);    //restituisco la stringa senza "Baerer "
+            //System.out.println("bearerToken: " + bearerToken);
+            return new ResponseEntity<String>("autorizzazione: " + userService.getAuth(bearerToken) + ".", HttpStatus.OK);
+        }
+        return new ResponseEntity<String>("non autorizzato ", HttpStatus.FORBIDDEN);
 
     }
+
+
 
 
     /*@Autowired
