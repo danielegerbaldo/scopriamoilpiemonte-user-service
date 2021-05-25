@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1/utente")
+@RequestMapping("/api/v1")
 public class UtenteController {
 
     private SecureUserService userService;
@@ -43,16 +43,18 @@ public class UtenteController {
     @PostMapping(value = "/signUp")
     public ResponseEntity<Utente> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
         //registrazione dell'utente
+        System.out.println("Registro l'utente: " + request.getEmail());
         Utente user;
         try {
             user = userService.signUp(request);
+            System.out.println("Registrazione utente: " + request.getEmail() + " avvenuta con successo");
             return new ResponseEntity<>(user, HttpStatus.OK);
         } catch (Exception e) {
             throw e;
         }
     }
 
-    @GetMapping(value = "/getAllUser")
+    @GetMapping(value = "/utente/getAllUser")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Utente>> getAllUser() throws RuntimeException {
         try {
