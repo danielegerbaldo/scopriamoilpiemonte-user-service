@@ -59,16 +59,16 @@ public class UtenteController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Utente>> getAllUser(HttpServletRequest requestHeader) throws RuntimeException {
 
-        System.out.println("**************************************************************************************************************");
+       /* System.out.println("**************************************************************************************************************");
 
         Enumeration headerNames = requestHeader.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String key = (String) headerNames.nextElement();
             String value = requestHeader.getHeader(key);
             System.out.println("HEADER: " + key +" " + value);
-        }
+        }*/
 
-        //System.out.println("Authorization: " + requestHeader);
+        System.out.println("Authorization: " + requestHeader);
         try {
             return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
         } catch (Exception e) {
