@@ -5,6 +5,7 @@ import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
 import TAASS.ServiceDBUtenti.requests.LoginRequest;
 import TAASS.ServiceDBUtenti.requests.SignUpRequest;
 import TAASS.ServiceDBUtenti.response.LoginResponse;
+import TAASS.ServiceDBUtenti.response.UserDto;
 import TAASS.ServiceDBUtenti.services.SecureUserService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,18 @@ public class UtenteController {
 
     @GetMapping(value = "/utente/getAllUser")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<Utente>> getAllUser() throws RuntimeException {
+    public ResponseEntity<List<Utente>> getAllUser(HttpServletRequest requestHeader) throws RuntimeException {
+
+        System.out.println("**************************************************************************************************************");
+
+        Enumeration headerNames = requestHeader.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            String value = requestHeader.getHeader(key);
+            System.out.println("HEADER: " + key +" " + value);
+        }
+
+        //System.out.println("Authorization: " + requestHeader);
         try {
             return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
         } catch (Exception e) {
@@ -64,23 +76,27 @@ public class UtenteController {
         }
     }
 
+/*  @PostMapping(value = "/getAuth/{token}")
+    public ResponseEntity<String> getAuth(@PathVariable(value="token") String token) throws RuntimeException {
 
-    @GetMapping(value = "/getAuth")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> getAuth(HttpServletRequest request) throws RuntimeException {
-        //System.out.println("getAuth");
-        String bearerToken = request.getHeader("Authorization");
-        //System.out.println("Authorization: " + bearerToken);
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            bearerToken = bearerToken.substring(7);    //restituisco la stringa senza "Baerer "
+        System.out.println("Authorization: " + token);
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);    //restituisco la stringa senza "Baerer "
             //System.out.println("bearerToken: " + bearerToken);
-            return new ResponseEntity<String>("autorizzazione: " + userService.getAuth(bearerToken) + ".", HttpStatus.OK);
+            return new ResponseEntity<String>("autorizzazione: " + userService.getAuth(token) + ".", HttpStatus.OK);
         }
         return new ResponseEntity<String>("non autorizzato ", HttpStatus.FORBIDDEN);
 
+    }*/
+
+    @GetMapping(value = "/validateToken")
+    public ResponseEntity<UserDto> validateToken(@RequestParam String token) throws RuntimeException {
+
+        System.out.println("Authorization: " + token);
+
+        return new ResponseEntity<UserDto>(userService.getAuth(token),HttpStatus.OK);
+
     }
-
-
 
 
     /*@Autowired

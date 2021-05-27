@@ -6,12 +6,16 @@ import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
 import TAASS.ServiceDBUtenti.requests.SignUpRequest;
 import TAASS.ServiceDBUtenti.response.LoginResponse;
+import TAASS.ServiceDBUtenti.response.UserDto;
 import TAASS.ServiceDBUtenti.security.token.IJwtTokenProviderService;
+import TAASS.ServiceDBUtenti.security.token.JwtTokenProviderService;
+import io.jsonwebtoken.Jwts;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -109,13 +113,33 @@ public class SecureUserService /*implements ISecureUserService*/ {
     }
 
 
-    public Role getAuth(String token){
+    public UserDto getAuth(String token){
         System.out.println("name: " + jwtTokenProviderService.validateUserAndGetAuthentication(token).getName());
-        return (Role)jwtTokenProviderService.validateUserAndGetAuthentication(token).getAuthorities().toArray()[0];
+
+        if(jwtTokenProviderService.validateUserAndGetAuthentication(token).getAuthorities().isEmpty()){
+            throw new MyCustomException("Invalid username/password supplied", HttpStatus.NOT_FOUND);
+        }else{
+            Role role = (Role)jwtTokenProviderService.validateUserAndGetAuthentication(token).getAuthorities().toArray()[0];
+            String email = jwtTokenProviderService.getUsername(token);
+            long id = secureUserRepository.findByEmail(email).getId();
+
+            System.out.println("Authorized: " + id + " " + email + " " + role.toString());
+
+            return new UserDto(id,email, role.name());
+        }
+
+
+
+
+
     }
 
     //@Override
     public String refreshToken(String userName) {
+
+
         return jwtTokenProviderService.createToken(userName, secureUserRepository.findByEmail(userName).getRuoli());
     }
+
+
 }

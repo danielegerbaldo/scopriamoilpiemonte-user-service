@@ -12,5 +12,5 @@ public interface IJwtTokenProviderService {
     String getUsername(String token);
     String parseToken(HttpServletRequest req);
     boolean validateToken(String token);
-
+    String getSecretKey();
 }

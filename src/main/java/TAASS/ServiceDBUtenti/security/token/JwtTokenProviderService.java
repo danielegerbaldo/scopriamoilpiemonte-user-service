@@ -7,6 +7,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -86,5 +87,10 @@ public class JwtTokenProviderService implements IJwtTokenProviderService {
         } catch (JwtException | IllegalArgumentException e) {
             throw new MyCustomException("Expired or invalid JWT token", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public String getSecretKey() {
+        return secretKey;
     }
 }
