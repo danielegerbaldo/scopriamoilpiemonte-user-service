@@ -1,22 +1,105 @@
 package TAASS.ServiceDBUtenti.controllers;
 
-import TAASS.ServiceDBUtenti.classiComode.RichiestaLogin;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
+import TAASS.ServiceDBUtenti.requests.LoginRequest;
+import TAASS.ServiceDBUtenti.requests.SignUpRequest;
+import TAASS.ServiceDBUtenti.response.LoginResponse;
+import TAASS.ServiceDBUtenti.response.UserDto;
+import TAASS.ServiceDBUtenti.services.SecureUserService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.annotation.RequestScope;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1/utente")
+@RequestMapping("/api/v1")
 public class UtenteController {
-    @Autowired
+
+    private SecureUserService userService;
+
+    public UtenteController(SecureUserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping(value = "/login")
+    public ResponseEntity<LoginResponse> login(HttpServletRequest requestHeader, @RequestBody LoginRequest request) throws RuntimeException {
+        //login dell'utente in maniera sicura
+        System.out.println("controller.login: email: " + request.getEmail());
+        LoginResponse loginResponse = userService.login(request.getEmail(), request.getPassword());
+        if(loginResponse == null){
+            throw new RuntimeException("Login failed. Possible cause : incorrect username/password");
+        }else{
+            return new ResponseEntity<>(loginResponse, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping(value = "/signUp")
+    public ResponseEntity<Utente> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
+        //registrazione dell'utente
+        System.out.println("Registro l'utente: " + request.getEmail());
+        Utente user;
+        try {
+            user = userService.signUp(request);
+            System.out.println("Registrazione utente: " + request.getEmail() + " avvenuta con successo");
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @GetMapping(value = "/utente/getAllUser")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<Utente>> getAllUser(HttpServletRequest requestHeader) throws RuntimeException {
+
+       /* System.out.println("**************************************************************************************************************");
+
+        Enumeration headerNames = requestHeader.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            String value = requestHeader.getHeader(key);
+            System.out.println("HEADER: " + key +" " + value);
+        }*/
+
+        System.out.println("Authorization: " + requestHeader);
+        try {
+            return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+/*  @PostMapping(value = "/getAuth/{token}")
+    public ResponseEntity<String> getAuth(@PathVariable(value="token") String token) throws RuntimeException {
+
+        System.out.println("Authorization: " + token);
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);    //restituisco la stringa senza "Baerer "
+            //System.out.println("bearerToken: " + bearerToken);
+            return new ResponseEntity<String>("autorizzazione: " + userService.getAuth(token) + ".", HttpStatus.OK);
+        }
+        return new ResponseEntity<String>("non autorizzato ", HttpStatus.FORBIDDEN);
+
+    }*/
+
+    @GetMapping(value = "/validateToken")
+    public ResponseEntity<UserDto> validateToken(@RequestParam String token) throws RuntimeException {
+
+        System.out.println("Authorization: " + token);
+
+        return new ResponseEntity<UserDto>(userService.getAuth(token),HttpStatus.OK);
+
+    }
+
+
+    /*@Autowired
     private UtenteRepository utenteRepository;
 
     @GetMapping
@@ -26,8 +109,7 @@ public class UtenteController {
         utenteRepository.findAll().forEach(utenti::add);
         System.out.println(">richiesta lista utenti, quantita' trovata: " + utenti.size());
         return utenti;
-    }
-
+    }*/
     /*@PostMapping
     public Utente postUtente(@RequestBody Utente utente){
         Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(),
@@ -35,7 +117,7 @@ public class UtenteController {
                 utente.getRuolo()));
         return nuovoUtente;
     }*/
-
+    /*
     @PostMapping
     public ResponseEntity<Map<String, String>> postUtente(@RequestBody Map<String, String> datiUtente){
         Utente nuovoUtente = new Utente(datiUtente.get("nome"), datiUtente.get("cognome"), datiUtente.getOrDefault("cf", ""),
@@ -103,5 +185,5 @@ public class UtenteController {
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
+    }*/
 }

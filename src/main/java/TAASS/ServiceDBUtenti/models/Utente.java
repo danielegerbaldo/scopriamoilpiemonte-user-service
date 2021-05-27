@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "utente")
+@Table(schema = "public")
 public class Utente {
     //dichiarazione elementi tabella
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name="nome")
@@ -27,7 +27,7 @@ public class Utente {
     private String telefono;
 
     @Column(name="comune_residenza")
-    private long comuneResidenza;
+    private long comuneResidenza;   //comune di residenza
 
     @Column(name = "email", unique=true)
     private String email;
@@ -35,15 +35,16 @@ public class Utente {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "ruolo")
-    private String ruolo;
+    @Column(name = "ruoli")
+    @ElementCollection(fetch = FetchType.EAGER)
+    List<Role> ruoli;
 
     @Column(name = "comune")
     //@DefaultValue(value = null)
-    private long comune;
+    private long comune;    //comune del quale sono sindaco o pubblicatore
 
-    public Utente(String nome, String cognome, String cf, String telefono, long comuneResidenza, String email,
-                  String password, String ruolo, long comune) {
+    public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long comune) {
+        this.id = id;
         this.nome = nome;
         this.cognome = cognome;
         this.cf = cf;
@@ -51,15 +52,13 @@ public class Utente {
         this.comuneResidenza = comuneResidenza;
         this.email = email;
         this.password = password;
-        this.ruolo = ruolo;
+        this.ruoli = ruolo;
         this.comune = comune;
     }
 
     public Utente() {
-
     }
 
-    //dichiarazione di tutti i getter e setter
     public Long getId() {
         return id;
     }
@@ -124,12 +123,12 @@ public class Utente {
         this.password = password;
     }
 
-    public String getRuolo() {
-        return ruolo;
+    public List<Role> getRuoli() {
+        return ruoli;
     }
 
-    public void setRuolo(String ruolo) {
-        this.ruolo = ruolo;
+    public void setRuoli(List<Role> ruolo) {
+        this.ruoli = ruolo;
     }
 
     public long getComune() {
