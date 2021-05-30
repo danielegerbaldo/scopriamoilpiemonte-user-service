@@ -42,14 +42,14 @@ public class UtenteController {
     }
 
     @PostMapping(value = "/signUp")
-    public ResponseEntity<Utente> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
+    public ResponseEntity<LoginResponse> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
         //registrazione dell'utente
         System.out.println("Registro l'utente: " + request.getEmail());
-        Utente user;
+        LoginResponse response;
         try {
-            user = userService.signUp(request);
+            response = userService.signUp(request);
             System.out.println("Registrazione utente: " + request.getEmail() + " avvenuta con successo");
-            return new ResponseEntity<>(user, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             throw e;
         }

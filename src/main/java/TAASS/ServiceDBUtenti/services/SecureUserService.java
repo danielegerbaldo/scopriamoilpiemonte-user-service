@@ -64,7 +64,7 @@ public class SecureUserService /*implements ISecureUserService*/ {
     }
 
     //@Override
-    public Utente signUp(SignUpRequest request) {
+    public LoginResponse signUp(SignUpRequest request) {
         if(secureUserRepository.existsByEmail(request.getEmail())){
             throw new MyCustomException("User already exists in system", HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -79,8 +79,12 @@ public class SecureUserService /*implements ISecureUserService*/ {
         secureUserRepository.save(user);
         log.info("Register successfully");
 
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setEmail(user.getEmail());
+        loginResponse.setUserName(user.getNome());
+        loginResponse.setAccessToken(jwtTokenProviderService.createToken(request.getEmail(), user.getRuoli()));
 
-        return user;
+        return loginResponse;
     }
 
     /*@Override
