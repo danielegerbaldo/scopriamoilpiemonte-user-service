@@ -1,8 +1,5 @@
 package TAASS.ServiceDBUtenti.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -41,9 +38,9 @@ public class Utente {
 
     @Column(name = "comune")
     //@DefaultValue(value = null)
-    private long comune;    //comune del quale sono sindaco o pubblicatore
+    private long dipendenteDiComune;    //comune del quale sono sindaco o pubblicatore
 
-    public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long comune) {
+    public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long dipendenteDiComune) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -53,7 +50,7 @@ public class Utente {
         this.email = email;
         this.password = password;
         this.ruoli = ruolo;
-        this.comune = comune;
+        this.dipendenteDiComune = dipendenteDiComune;
     }
 
     public Utente() {
@@ -131,11 +128,11 @@ public class Utente {
         this.ruoli = ruolo;
     }
 
-    public long getComune() {
-        return comune;
+    public long getDipendenteDiComune() {
+        return dipendenteDiComune;
     }
 
-    public void setComune(long comune) {
-        this.comune = comune;
+    public void setDipendenteDiComune(long comune) {
+        this.dipendenteDiComune = comune;
     }
 }
