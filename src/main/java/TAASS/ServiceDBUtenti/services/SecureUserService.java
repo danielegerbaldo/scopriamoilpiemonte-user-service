@@ -140,9 +140,11 @@ public class SecureUserService /*implements ISecureUserService*/ {
 
     //@Override
     public String refreshToken(String userName) {
-
-
         return jwtTokenProviderService.createToken(userName, secureUserRepository.findByEmail(userName).getRuoli());
+    }
+
+    public Utente getUserById(long id){
+        return secureUserRepository.findById(id);
     }
 
 

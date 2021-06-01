@@ -14,12 +14,12 @@ public class RabbitMQConfig {
 
     @Bean
     Queue requestUserGateway() {
-        return new Queue("requestUserGateway");
+        return new Queue("requestUserEvent");
     }
 
     @Bean
     Queue publishUserGateway() {
-        return new Queue("publishUserGateway");
+        return new Queue("publishUserEvent");
     }
 
 

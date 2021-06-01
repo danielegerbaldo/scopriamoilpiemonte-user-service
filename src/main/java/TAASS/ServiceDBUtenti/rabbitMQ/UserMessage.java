@@ -1,5 +1,6 @@
 package TAASS.ServiceDBUtenti.rabbitMQ;
 
+import TAASS.ServiceDBUtenti.models.Utente;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Notification implements Serializable {
-    String subject;
-    String content;
+public class UserMessage implements Serializable {
+    long userId;
+    Utente body;
 }
