@@ -76,6 +76,26 @@ public class UtenteController {
         }
     }
 
+    @GetMapping(value = "/utente/getUser/{id}")
+    public ResponseEntity<Utente> getUser(HttpServletRequest requestHeader, @PathVariable long id) throws RuntimeException {
+
+       /* System.out.println("**************************************************************************************************************");
+
+        Enumeration headerNames = requestHeader.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            String value = requestHeader.getHeader(key);
+            System.out.println("HEADER: " + key +" " + value);
+        }*/
+
+        System.out.println("Authorization: " + requestHeader);
+        try {
+            return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
 /*  @PostMapping(value = "/getAuth/{token}")
     public ResponseEntity<String> getAuth(@PathVariable(value="token") String token) throws RuntimeException {
 

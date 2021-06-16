@@ -36,6 +36,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/login").permitAll()
                 .antMatchers("/api/v1/signUp").permitAll()
                 .antMatchers("/api/v1/validateToken").permitAll()
+                .antMatchers("/api/v1/utente/getUser/**").permitAll()
                 .anyRequest().authenticated();
 
         // If a user try to access a resource without having enough permissions
