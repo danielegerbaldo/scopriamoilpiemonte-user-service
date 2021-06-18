@@ -37,6 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/signUp").permitAll()
                 .antMatchers("/api/v1/validateToken").permitAll()
                 .antMatchers("/api/v1/utente/getUser/**").permitAll()
+                .antMatchers("/api/v1/utente/getUsersByIdList/**").permitAll()
                 .anyRequest().authenticated();
 
         http.logout(logout-> logout
