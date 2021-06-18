@@ -39,6 +39,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/utente/getUser/**").permitAll()
                 .anyRequest().authenticated();
 
+        http.logout(logout-> logout
+        .logoutUrl("/api/v1/logout")
+        .invalidateHttpSession(true)
+        );
+
         // If a user try to access a resource without having enough permissions
         http.exceptionHandling().accessDeniedPage("/accessDeniedPage");
 

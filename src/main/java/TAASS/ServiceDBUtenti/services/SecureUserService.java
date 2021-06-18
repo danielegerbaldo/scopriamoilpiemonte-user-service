@@ -49,7 +49,7 @@ public class SecureUserService /*implements ISecureUserService*/ {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
 
             Utente user = secureUserRepository.findByEmail(userName);
-
+            
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setEmail(user.getEmail());
             loginResponse.setUserName(user.getNome());
@@ -141,10 +141,6 @@ public class SecureUserService /*implements ISecureUserService*/ {
     //@Override
     public String refreshToken(String userName) {
         return jwtTokenProviderService.createToken(userName, secureUserRepository.findByEmail(userName).getRuoli());
-    }
-
-    public Utente getUserById(long id){
-        return secureUserRepository.findById(id);
     }
 
 

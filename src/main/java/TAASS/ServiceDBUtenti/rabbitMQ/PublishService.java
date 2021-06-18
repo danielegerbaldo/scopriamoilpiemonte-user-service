@@ -1,6 +1,7 @@
 package TAASS.ServiceDBUtenti.rabbitMQ;
 
 import TAASS.ServiceDBUtenti.models.Utente;
+import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
 import TAASS.ServiceDBUtenti.services.SecureUserService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +15,16 @@ import java.time.format.DateTimeFormatter;
 public class PublishService {
 
     private final RabbitTemplate rabbitTemplate;
-    @Autowired
-    private SecureUserService userService;
+    private final UtenteRepository userRepository;
 
-    public PublishService(RabbitTemplate rabbitTemplate) {
+    public PublishService(RabbitTemplate rabbitTemplate, UtenteRepository userRepository) {
         this.rabbitTemplate = rabbitTemplate;
+        this.userRepository = userRepository;
     }
 
 
     public void publishNotification(String queue, long userId) {
-        Utente user = userService.getUserById(userId);
+        Utente user = userRepository.findById(userId).get();
         rabbitTemplate.convertAndSend(queue,
                 new UserMessage(userId,user));
     }

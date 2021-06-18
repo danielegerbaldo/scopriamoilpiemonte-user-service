@@ -24,9 +24,11 @@ import java.util.*;
 public class UtenteController {
 
     private SecureUserService userService;
+    private final UtenteRepository  utenteRepository;
 
-    public UtenteController(SecureUserService userService) {
+    public UtenteController(SecureUserService userService, UtenteRepository utenteRepository) {
         this.userService = userService;
+        this.utenteRepository = utenteRepository;
     }
 
     @PostMapping(value = "/login")
@@ -76,6 +78,18 @@ public class UtenteController {
         }
     }
 
+    @PostMapping(value = "/utente/getUsersByIdList")
+    public List<Utente> getUsersByIdList(HttpServletRequest requestHeader, @RequestBody List<Long> ids) {
+        List<Utente> utenti = new ArrayList<Utente>();
+        for (long id : ids) {
+            if (utenteRepository.findById(id).isPresent()) {
+                utenti.add(utenteRepository.findById(id).get());
+            }
+        }
+
+        return utenti;
+    }
+
     @GetMapping(value = "/utente/getUser/{id}")
     public ResponseEntity<Utente> getUser(HttpServletRequest requestHeader, @PathVariable long id) throws RuntimeException {
 
@@ -90,7 +104,11 @@ public class UtenteController {
 
         System.out.println("Authorization: " + requestHeader);
         try {
-            return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
+            if(utenteRepository.findById(id).isPresent())
+                return new ResponseEntity<Utente>(utenteRepository.findById(id).get(), HttpStatus.OK);
+            else
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
+
         } catch (Exception e) {
             throw e;
         }

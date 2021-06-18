@@ -10,7 +10,7 @@ public interface UtenteRepository extends JpaRepository<Utente, Long> {
 
     Utente findByEmail(String email);
 
-    Utente findById(long id);
+    //Utente findById(long id);
 
     boolean existsByEmail(String email);
 }
