@@ -32,7 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         // Entry points
-        http.authorizeRequests()
+        //TODO: verificare che tutto funzioni ancora eliminando questa parte
+        /*http.authorizeRequests()
                 .antMatchers("/api/v1/login").permitAll()
                 .antMatchers("/api/v1/signUp").permitAll()
                 .antMatchers("/api/v1/validateToken").permitAll()
@@ -46,7 +47,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         );
 
         // If a user try to access a resource without having enough permissions
-        http.exceptionHandling().accessDeniedPage("/accessDeniedPage");
+        http.exceptionHandling().accessDeniedPage("/accessDeniedPage");*/
 
         // Apply JWT
         http.apply(new JwtTokenFilterConfigurer(jwtTokenProviderService));
