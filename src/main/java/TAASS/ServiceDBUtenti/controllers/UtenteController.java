@@ -1,5 +1,6 @@
 package TAASS.ServiceDBUtenti.controllers;
 
+import TAASS.ServiceDBUtenti.exception.ForbiddenException;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
 import TAASS.ServiceDBUtenti.requests.LoginRequest;
@@ -58,19 +59,16 @@ public class UtenteController {
     }
 
     @GetMapping(value = "/utente/getAllUser")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Utente>> getAllUser(HttpServletRequest requestHeader) throws RuntimeException {
 
-       /* System.out.println("**************************************************************************************************************");
+        //X-auth-user-role: header da controllare
+        //AUTH: prendo l'autorizzazione dall'header e verifico che sia admin; questo va a sostituire il "@PreAuthorize("hasRole('ROLE_ADMIN')")"
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        if(!auth.equals("ROLE_ADMIN")){
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
 
-        Enumeration headerNames = requestHeader.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String key = (String) headerNames.nextElement();
-            String value = requestHeader.getHeader(key);
-            System.out.println("HEADER: " + key +" " + value);
-        }*/
-
-        System.out.println("Authorization: " + requestHeader);
+        //System.out.println("Authorization: " + requestHeader);
         try {
             return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
         } catch (Exception e) {
@@ -80,6 +78,19 @@ public class UtenteController {
 
     @PostMapping(value = "/utente/getUsersByIdList")
     public List<Utente> getUsersByIdList(HttpServletRequest requestHeader, @RequestBody List<Long> ids) {
+
+        /*TODO
+            per ora questo metodo è permesso a qualsiasi sindaco o pubblicatore (oltre che agli amministratori)
+            bisogna verificare che il sindaco sia sindaco del comune dell'evento o che il pubblicatore abbia
+            pubblicato davvero quell'evento
+         */
+        //AUTH: admin, sindaco, pubblicatore
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        if(!(auth.equals("ROLE_ADMIN") || auth.equals("ROLE_MAYOR") || auth.equals("ROLE_PUBLISHER") )){
+            throw new ForbiddenException();     //TODO: verificare che lanci una forbidden exception
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
         List<Utente> utenti = new ArrayList<Utente>();
         for (long id : ids) {
             if (utenteRepository.findById(id).isPresent()) {
@@ -92,15 +103,23 @@ public class UtenteController {
 
     @GetMapping(value = "/utente/getUser/{id}")
     public ResponseEntity<Utente> getUser(HttpServletRequest requestHeader, @PathVariable long id) throws RuntimeException {
-
-       /* System.out.println("**************************************************************************************************************");
-
-        Enumeration headerNames = requestHeader.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String key = (String) headerNames.nextElement();
-            String value = requestHeader.getHeader(key);
-            System.out.println("HEADER: " + key +" " + value);
+        // Questo metodo non richiede autorizzazione, TODO: filtrarlo dal gateway
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+        /*String head = headers.nextElement() ;
+        while(head != null){
+            System.out.println("/utente/getUser/{id}: headers = " + head);
+            head = headers.nextElement() ;
         }*/
+        System.out.println("/utente/getUser/{id}: X-auth-user-id pt2 = " + requestHeader.getHeader("X-auth-user-id"));
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+        System.out.println("/utente/getUser/{id}: X-auth-user-id pt3 = " + idToken);
+        //AUTH: può accedere solo un admin o se l'id calcolato dal token coincide con l'id ricevuto nella richiesta
+        if(!(auth.equals("ROLE_ADMIN") || id == idToken)){
+            throw new ForbiddenException();     //TODO: verificare che lanci una forbidden exception
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+        System.out.println("/utente/getUser/{id}: superato l'if");
 
         System.out.println("Authorization: " + requestHeader);
         try {
@@ -126,6 +145,17 @@ public class UtenteController {
         return new ResponseEntity<String>("non autorizzato ", HttpStatus.FORBIDDEN);
 
     }*/
+
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<String> rimuoviTuttiUtenti(HttpServletRequest requestHeader){
+        //AUTH: admin
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        if(!auth.equals("ROLE_ADMIN")){
+            return new ResponseEntity<>("Non sei autorizzato", HttpStatus.FORBIDDEN);
+        }
+        utenteRepository.deleteAll();
+        return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
+    }
 
     @GetMapping(value = "/validateToken")
     public ResponseEntity<UserDto> validateToken(@RequestParam String token) throws RuntimeException {
@@ -171,41 +201,11 @@ public class UtenteController {
         return  new ResponseEntity<Map<String, String>>(risposta, HttpStatus.OK);
     }
 
-    //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
-    @PostMapping("/login")
-    public ResponseEntity<String> fakeLogin(@RequestBody Map<String, String> richiestaLogin){
-        String email = richiestaLogin.get("email").toString().trim();
-        String password = richiestaLogin.get("password").toString().trim();
-        System.out.println(">richiesta login: p: " + password);
-        System.out.println(">richiesta login: e: " + email);
-        List<Utente> utenti = utenteRepository.findByEmail(email);
-        System.out.println(">utenti trovati: " + utenti.size());
-        Gson gson = new Gson();
-        ResponseEntity<String> responseEntity;
-        if(utenti.size() == 1){
-            responseEntity = new ResponseEntity<>(gson.toJson(utenti.get(0)), HttpStatus.OK);
-        }else{
-            responseEntity = new ResponseEntity<>(gson.toJson(null), HttpStatus.NOT_FOUND);
-        }
-        return responseEntity;
-    }
-
-    @DeleteMapping("/deleteAll")
-    public ResponseEntity<String> rimuoviTuttiUtenti(){
-        utenteRepository.deleteAll();
-        return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
-    }
 
     @DeleteMapping("/deleteByID")
     public ResponseEntity<String> rimuoviUtentePerID(long id){
         utenteRepository.deleteById(id);
         return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
-    }
-
-    @GetMapping("/nome/{nome}")     //da aggiungere anche cognome
-    public List<Utente> trovaPerNome(@PathVariable String nome){
-        List<Utente> utenti = utenteRepository.findByNome(nome);
-        return utenti;
     }
 
     @PutMapping("/aggiorna/{id}")
