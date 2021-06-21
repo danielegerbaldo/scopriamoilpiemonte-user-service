@@ -59,11 +59,10 @@ public class UtenteController {
     }
 
     @GetMapping(value = "/utente/getAllUser")
-    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Utente>> getAllUser(HttpServletRequest requestHeader) throws RuntimeException {
 
         //X-auth-user-role: header da controllare
-        //prendo l'autorizzazione dall'header e verifico che sia admin; questo va a sostituire il "@PreAuthorize("hasRole('ROLE_ADMIN')")"
+        //AUTH: prendo l'autorizzazione dall'header e verifico che sia admin; questo va a sostituire il "@PreAuthorize("hasRole('ROLE_ADMIN')")"
         String auth = requestHeader.getHeader("X-auth-user-role");
         if(!auth.equals("ROLE_ADMIN")){
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
@@ -85,7 +84,7 @@ public class UtenteController {
             bisogna verificare che il sindaco sia sindaco del comune dell'evento o che il pubblicatore abbia
             pubblicato davvero quell'evento
          */
-
+        //AUTH: admin, sindaco, pubblicatore
         String auth = requestHeader.getHeader("X-auth-user-role");
         if(!(auth.equals("ROLE_ADMIN") || auth.equals("ROLE_MAYOR") || auth.equals("ROLE_PUBLISHER") )){
             throw new ForbiddenException();     //TODO: verificare che lanci una forbidden exception
@@ -105,6 +104,23 @@ public class UtenteController {
     @GetMapping(value = "/utente/getUser/{id}")
     public ResponseEntity<Utente> getUser(HttpServletRequest requestHeader, @PathVariable long id) throws RuntimeException {
         // Questo metodo non richiede autorizzazione, TODO: filtrarlo dal gateway
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+        /*String head = headers.nextElement() ;
+        while(head != null){
+            System.out.println("/utente/getUser/{id}: headers = " + head);
+            head = headers.nextElement() ;
+        }*/
+        System.out.println("/utente/getUser/{id}: X-auth-user-id pt2 = " + requestHeader.getHeader("X-auth-user-id"));
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+        System.out.println("/utente/getUser/{id}: X-auth-user-id pt3 = " + idToken);
+        //AUTH: può accedere solo un admin o se l'id calcolato dal token coincide con l'id ricevuto nella richiesta
+        if(!(auth.equals("ROLE_ADMIN") || id == idToken)){
+            throw new ForbiddenException();     //TODO: verificare che lanci una forbidden exception
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+        System.out.println("/utente/getUser/{id}: superato l'if");
+
         System.out.println("Authorization: " + requestHeader);
         try {
             if(utenteRepository.findById(id).isPresent())
@@ -132,6 +148,7 @@ public class UtenteController {
 
     @DeleteMapping("/deleteAll")
     public ResponseEntity<String> rimuoviTuttiUtenti(HttpServletRequest requestHeader){
+        //AUTH: admin
         String auth = requestHeader.getHeader("X-auth-user-role");
         if(!auth.equals("ROLE_ADMIN")){
             return new ResponseEntity<>("Non sei autorizzato", HttpStatus.FORBIDDEN);
