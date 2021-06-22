@@ -1,7 +1,9 @@
 package TAASS.ServiceDBUtenti.models;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(schema = "public")
@@ -36,6 +38,10 @@ public class Utente {
     @ElementCollection(fetch = FetchType.EAGER)
     List<Role> ruoli;
 
+    @Column(name = "iscrizioni")
+    @ElementCollection(fetch = FetchType.EAGER)
+    Set<Long> iscrizioni;
+
     @Column(name = "comune")
     //@DefaultValue(value = null)
     private long dipendenteDiComune;    //comune del quale sono sindaco o pubblicatore
@@ -51,6 +57,7 @@ public class Utente {
         this.password = password;
         this.ruoli = ruolo;
         this.dipendenteDiComune = dipendenteDiComune;
+        this.iscrizioni = new HashSet<Long>();
     }
 
     public Utente() {
@@ -134,5 +141,13 @@ public class Utente {
 
     public void setDipendenteDiComune(long comune) {
         this.dipendenteDiComune = comune;
+    }
+
+    public Set<Long> getIscrizioni() {
+        return iscrizioni;
+    }
+
+    public void setIscrizioni(Set<Long> iscrizioni) {
+        this.iscrizioni = iscrizioni;
     }
 }

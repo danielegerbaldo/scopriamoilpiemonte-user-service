@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 public class PublishService {
-
+/*
     private final RabbitTemplate rabbitTemplate;
     private final UtenteRepository userRepository;
 
@@ -27,5 +27,5 @@ public class PublishService {
         Utente user = userRepository.findById(userId).get();
         rabbitTemplate.convertAndSend(queue,
                 new UserMessage(userId,user));
-    }
+    }*/
 }
