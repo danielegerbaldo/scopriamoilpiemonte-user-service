@@ -51,6 +51,7 @@ public class SecureUserService /*implements ISecureUserService*/ {
             Utente user = secureUserRepository.findByEmail(userName);
             
             LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setId(user.getId());
             loginResponse.setEmail(user.getEmail());
             loginResponse.setUserName(user.getNome());
             loginResponse.setAccessToken(jwtTokenProviderService.createToken(userName, user.getRuoli()));
