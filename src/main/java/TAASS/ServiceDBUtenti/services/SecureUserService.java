@@ -86,6 +86,7 @@ public class SecureUserService /*implements ISecureUserService*/ {
         log.info("Register successfully");
 
         LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setId(user.getId());
         loginResponse.setEmail(user.getEmail());
         loginResponse.setUserName(user.getNome());
         loginResponse.setAccessToken(jwtTokenProviderService.createToken(request.getEmail(), user.getRuoli()));
