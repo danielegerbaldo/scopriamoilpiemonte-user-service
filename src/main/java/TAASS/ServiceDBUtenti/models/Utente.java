@@ -42,6 +42,9 @@ public class Utente {
     @ElementCollection(fetch = FetchType.EAGER)
     Set<Long> iscrizioni;
 
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+
     @Column(name = "comune")
     //@DefaultValue(value = null)
     private long dipendenteDiComune;    //comune del quale sono sindaco o pubblicatore
@@ -149,5 +152,13 @@ public class Utente {
 
     public void setIscrizioni(Set<Long> iscrizioni) {
         this.iscrizioni = iscrizioni;
+    }
+
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
     }
 }
