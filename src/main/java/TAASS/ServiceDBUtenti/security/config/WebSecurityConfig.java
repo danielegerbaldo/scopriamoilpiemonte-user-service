@@ -2,11 +2,13 @@ package TAASS.ServiceDBUtenti.security.config;
 
 
 import TAASS.ServiceDBUtenti.models.CustomOAuth2User;
+import TAASS.ServiceDBUtenti.response.LoginResponse;
 import TAASS.ServiceDBUtenti.security.token.IJwtTokenProviderService;
 import TAASS.ServiceDBUtenti.security.token.JwtTokenFilterConfigurer;
 import TAASS.ServiceDBUtenti.services.CustomOAuth2UserService;
 import TAASS.ServiceDBUtenti.services.GoogleUserService;
 import TAASS.ServiceDBUtenti.services.SecureUserService;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,10 +73,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
 
-                        System.out.println("NOME: " + oauthUser.getName() + " COGNOME: " + oauthUser.getAttributes().get("family_name"));
-                        googleUserService.processOAuthPostLogin(oauthUser.getEmail());
 
-                        response.sendRedirect("/list");
+                        System.out.println("ATTRIBUTES: "+ oauthUser.getAttributes().toString());
+
+                        response.setCharacterEncoding("UTF-8");
+                        response.setContentType("application/json");
+                        response.setStatus(200);
+                        response.getWriter().write(new Gson().toJson(googleUserService.processOAuthPostLogin(oauthUser)));
                     }
                 })
                 .and()
