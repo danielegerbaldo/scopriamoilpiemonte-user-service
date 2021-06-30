@@ -5,7 +5,9 @@ import TAASS.ServiceDBUtenti.models.CustomOAuth2User;
 import TAASS.ServiceDBUtenti.security.token.IJwtTokenProviderService;
 import TAASS.ServiceDBUtenti.security.token.JwtTokenFilterConfigurer;
 import TAASS.ServiceDBUtenti.services.CustomOAuth2UserService;
+import TAASS.ServiceDBUtenti.services.GoogleUserService;
 import TAASS.ServiceDBUtenti.services.SecureUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,16 +34,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IJwtTokenProviderService jwtTokenProviderService;
 
-    //private SecureUserService secureUserService;
+    private GoogleUserService googleUserService;
 
 
-    //@Autowired
-    //private CustomOAuth2UserService oauthUserService;
+    @Autowired
+    private CustomOAuth2UserService oauthUserService;
 
-    public WebSecurityConfig(IJwtTokenProviderService jwtTokenProviderService, CustomOAuth2UserService oauthUserService/*, SecureUserService secureUserService*/) {
+    public WebSecurityConfig(IJwtTokenProviderService jwtTokenProviderService, CustomOAuth2UserService oauthUserService, GoogleUserService googleUserService) {
         this.jwtTokenProviderService = jwtTokenProviderService;
-        //this.oauthUserService = oauthUserService;
-        //this.secureUserService = secureUserService;
+        this.oauthUserService = oauthUserService;
+        this.googleUserService = googleUserService;
     }
 
     @Override
@@ -51,15 +53,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests()
-                .antMatchers("/", "/login", "/oauth/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()//.permitAll()
+                .antMatchers("/", "/login", "/oauth2/**").permitAll()
+                .anyRequest().permitAll()
+                //.and()
+                //.formLogin().permitAll()
                 .and()
                 .oauth2Login()
                 .loginPage("/login")
                 .userInfoEndpoint()
-                //.userService(oauthUserService)
+                .userService(oauthUserService)
                 .and()
                 .successHandler(new AuthenticationSuccessHandler() {
 
@@ -69,7 +71,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                         CustomOAuth2User oauthUser = (CustomOAuth2User) authentication.getPrincipal();
 
-                        //secureUserService.processOAuthPostLogin(oauthUser.getEmail());
+                        System.out.println("NOME: " + oauthUser.getName() + " COGNOME: " + oauthUser.getAttributes().get("family_name"));
+                        googleUserService.processOAuthPostLogin(oauthUser.getEmail());
 
                         response.sendRedirect("/list");
                     }
