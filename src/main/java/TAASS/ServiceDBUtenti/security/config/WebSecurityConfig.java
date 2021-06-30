@@ -38,9 +38,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private GoogleUserService googleUserService;
 
-
-    @Autowired
-    private CustomOAuth2UserService oauthUserService;
+    private final CustomOAuth2UserService oauthUserService;
 
     public WebSecurityConfig(IJwtTokenProviderService jwtTokenProviderService, CustomOAuth2UserService oauthUserService, GoogleUserService googleUserService) {
         this.jwtTokenProviderService = jwtTokenProviderService;
@@ -57,11 +55,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/", "/login", "/oauth2/**").permitAll()
                 .anyRequest().permitAll()
-                //.and()
-                //.formLogin().permitAll()
                 .and()
                 .oauth2Login()
-                .loginPage("/login")
                 .userInfoEndpoint()
                 .userService(oauthUserService)
                 .and()
@@ -81,11 +76,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         response.setStatus(200);
                         response.getWriter().write(new Gson().toJson(googleUserService.processOAuthPostLogin(oauthUser)));
                     }
-                })
-                .and()
-                .logout().logoutSuccessUrl("/").permitAll()
-                .and()
-                .exceptionHandling().accessDeniedPage("/403");
+                });
 
         // Apply JWT
         http.apply(new JwtTokenFilterConfigurer(jwtTokenProviderService));
