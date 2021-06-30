@@ -6,6 +6,16 @@ public class LoginResponse {
     private String email;
     private String accessToken;
 
+    public LoginResponse() {
+    }
+
+    public LoginResponse(long id, String userName, String email, String accessToken) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+        this.accessToken = accessToken;
+    }
+
     public String getUserName() {
         return userName;
     }

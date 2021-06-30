@@ -1,6 +1,7 @@
 package TAASS.ServiceDBUtenti.services;
 
 import TAASS.ServiceDBUtenti.exception.MyCustomException;
+import TAASS.ServiceDBUtenti.models.Provider;
 import TAASS.ServiceDBUtenti.models.Role;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
@@ -8,20 +9,15 @@ import TAASS.ServiceDBUtenti.requests.SignUpRequest;
 import TAASS.ServiceDBUtenti.response.LoginResponse;
 import TAASS.ServiceDBUtenti.response.UserDto;
 import TAASS.ServiceDBUtenti.security.token.IJwtTokenProviderService;
-import TAASS.ServiceDBUtenti.security.token.JwtTokenProviderService;
-import io.jsonwebtoken.Jwts;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 
 

@@ -42,9 +42,18 @@ public class Utente {
     @ElementCollection(fetch = FetchType.EAGER)
     Set<Long> iscrizioni;
 
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+
     @Column(name = "comune")
     //@DefaultValue(value = null)
     private long dipendenteDiComune;    //comune del quale sono sindaco o pubblicatore
+
+    @Column(name = "picture_url")
+    private String pictureUrl;
+
+    @Column(name = "email_verified")
+    private boolean emailVerified;
 
     public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long dipendenteDiComune) {
         this.id = id;
@@ -149,5 +158,29 @@ public class Utente {
 
     public void setIscrizioni(Set<Long> iscrizioni) {
         this.iscrizioni = iscrizioni;
+    }
+
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }
