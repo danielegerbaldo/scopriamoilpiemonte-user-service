@@ -90,19 +90,6 @@ public class SecureUserService /*implements ISecureUserService*/ {
         return loginResponse;
     }
 
-    public void processOAuthPostLogin(String email) {
-        Utente existUser = secureUserRepository.findByEmail(email);
-
-        if (existUser == null) {
-            Utente newUser = new Utente();
-            newUser.setEmail(email);
-            newUser.setProvider(Provider.GOOGLE);
-            //newUser.setEnabled(true);
-            secureUserRepository.save(newUser);
-        }
-
-    }
-
     /*@Override
     public void removeUser(String userName) {
         if(!secureUserRepository.existsByUsername(userName)){
