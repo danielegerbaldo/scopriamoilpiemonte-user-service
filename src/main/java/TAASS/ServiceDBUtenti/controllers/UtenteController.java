@@ -3,6 +3,7 @@ package TAASS.ServiceDBUtenti.controllers;
 import TAASS.ServiceDBUtenti.exception.ForbiddenException;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
+import TAASS.ServiceDBUtenti.requests.ChangeRoleRequest;
 import TAASS.ServiceDBUtenti.requests.LoginRequest;
 import TAASS.ServiceDBUtenti.requests.SignUpRequest;
 import TAASS.ServiceDBUtenti.response.LoginResponse;
@@ -120,6 +121,36 @@ public class UtenteController {
         try {
             if(utenteRepository.findById(id).isPresent())
                 return new ResponseEntity<Utente>(utenteRepository.findById(id).get(), HttpStatus.OK);
+            else
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
+
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @PostMapping(value = "/utente/changeRole")
+    public ResponseEntity<Utente> changeRole(HttpServletRequest requestHeader, @RequestBody ChangeRoleRequest request) throws RuntimeException {
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        //AUTH: può accedere solo un admin o sindaco
+        if(!(auth.equals("ROLE_ADMIN") || auth.equals("ROLE_MAYOR"))){
+            throw new ForbiddenException();     //TODO: verificare che lanci una forbidden exception
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            if(utenteRepository.findById(request.getId()).isPresent()) {
+                Utente utente = utenteRepository.findById(request.getId()).get();
+                utente.setRuoli(request.getRuoli());
+                utenteRepository.save(utente);
+                utente.setPassword(null);
+                return new ResponseEntity<Utente>(utente, HttpStatus.OK);
+            }
             else
                 return new ResponseEntity(HttpStatus.NOT_FOUND);
 
