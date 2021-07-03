@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -52,6 +53,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        http.headers().frameOptions().disable();
+
         http.authorizeRequests()
                 .antMatchers("/", "/login", "/oauth2/**").permitAll()
                 .anyRequest().permitAll()
@@ -70,6 +73,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
                         System.out.println("ATTRIBUTES: "+ oauthUser.getAttributes().toString());
+
+                        String contextPath = request.getContextPath();
+
+                        //Creating cookie response
+                        String cookieName = "GoogleLogin";
+                        String cookieValue = googleUserService.processOAuthPostLogin(oauthUser).getAccessToken();
+                        Cookie newCookie = new Cookie(cookieName, cookieValue);
+                        newCookie.setPath(contextPath);
+                        newCookie.setMaxAge(3600);
+                        response.addCookie(newCookie);
 
                         response.setCharacterEncoding("UTF-8");
                         response.setContentType("application/json");
