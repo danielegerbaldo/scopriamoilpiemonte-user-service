@@ -13,4 +13,6 @@ public interface UtenteRepository extends JpaRepository<Utente, Long> {
     //Utente findById(long id);
 
     boolean existsByEmail(String email);
+
+    List<Utente> findAllByDipendenteDiComune(long idComune);
 }
