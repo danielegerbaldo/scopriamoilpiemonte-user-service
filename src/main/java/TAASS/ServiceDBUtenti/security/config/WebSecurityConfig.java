@@ -74,7 +74,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                         System.out.println("ATTRIBUTES: "+ oauthUser.getAttributes().toString());
 
-                        String contextPath = request.getContextPath();
+                        String contextPath = /*request.getContextPath();*/ "/";
 
                         //Creating cookie response
                         String cookieName = "GoogleLogin";
