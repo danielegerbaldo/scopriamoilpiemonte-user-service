@@ -40,6 +40,7 @@ public class UtenteController {
         }
     }
 
+
     @PostMapping(value = "/signUp")
     public ResponseEntity<LoginResponse> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
         //registrazione dell'utente
@@ -224,6 +225,36 @@ public class UtenteController {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    @PutMapping("/utente/updateUser/{id}")
+    public ResponseEntity<Utente> updateUser(HttpServletRequest requestHeader, @PathVariable(value = "id") Long id,
+                                             @RequestBody Utente utente) throws RuntimeException {
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        Utente userToBeUpdated = utenteRepository.findById(id).get();
+
+        //AUTH: Devo essere ADMIN o il l' utente stesso
+        if(!(auth.equals("ROLE_ADMIN") || utente.getId() == idToken)) {
+            throw new ForbiddenException();
+        }
+
+
+        //UPDATING user
+
+        userToBeUpdated.setDipendenteDiComune(utente.getDipendenteDiComune());
+        userToBeUpdated.setCognome(utente.getCognome());
+        userToBeUpdated.setNome(utente.getNome());
+        userToBeUpdated.setEmail(utente.getEmail());
+        userToBeUpdated.setCf(utente.getCf());
+        userToBeUpdated.setComuneResidenza(utente.getComuneResidenza());
+        userToBeUpdated.setTelefono(utente.getTelefono());
+
+        utenteRepository.save(userToBeUpdated);
+
+        return new ResponseEntity<Utente>(userToBeUpdated, HttpStatus.OK);
     }
 
     /*@Autowired
