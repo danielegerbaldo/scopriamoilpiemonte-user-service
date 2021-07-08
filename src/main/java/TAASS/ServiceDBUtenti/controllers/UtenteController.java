@@ -241,7 +241,7 @@ public class UtenteController {
         Utente userToBeUpdated = utenteRepository.findById(id).get();
 
         //AUTH: Devo essere ADMIN o l'utente stesso
-        if(!(auth.equals("ROLE_ADMIN") || utente.getId() == idToken)) {
+        if(!(auth.equals("ROLE_ADMIN") || id == idToken)) {
             throw new ForbiddenException();
         }
 
