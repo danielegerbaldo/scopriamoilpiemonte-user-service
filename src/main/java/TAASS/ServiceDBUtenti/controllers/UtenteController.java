@@ -234,9 +234,13 @@ public class UtenteController {
         String auth = requestHeader.getHeader("X-auth-user-role");
         long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
 
+        if(!utenteRepository.findById(id).isPresent()){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
         Utente userToBeUpdated = utenteRepository.findById(id).get();
 
-        //AUTH: Devo essere ADMIN o il l' utente stesso
+        //AUTH: Devo essere ADMIN o l'utente stesso
         if(!(auth.equals("ROLE_ADMIN") || utente.getId() == idToken)) {
             throw new ForbiddenException();
         }
