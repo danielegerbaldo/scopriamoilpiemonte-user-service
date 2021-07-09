@@ -261,6 +261,35 @@ public class UtenteController {
         return new ResponseEntity<Utente>(userToBeUpdated, HttpStatus.OK);
     }
 
+    @PutMapping("/utente/setDipendenteDiComune")
+    public ResponseEntity<Utente> setDipendenteDiComune(HttpServletRequest requestHeader, @RequestParam Long idUtente,
+                                             @RequestParam Long idComune) throws RuntimeException {
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+        long comuneDipendente = requestHeader.getHeader("X-auth-user-comune-dipendente-id")!=null?Long.parseLong(requestHeader.getHeader("X-auth-user-comune-dipendente-id")):-1;
+
+        if(!utenteRepository.findById(idUtente).isPresent()){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        Utente userToBeUpdated = utenteRepository.findById(idUtente).get();
+
+
+        //AUTH: Devo essere ADMIN o il sindaco del comune da impostare
+        if(!(auth.equals("ROLE_ADMIN") || (auth.equals("ROLE_MAYOR") && comuneDipendente==idComune))) {
+            throw new ForbiddenException();
+        }
+
+
+        //UPDATING user
+
+        userToBeUpdated.setDipendenteDiComune(idComune);
+        utenteRepository.save(userToBeUpdated);
+
+        return new ResponseEntity<Utente>(userToBeUpdated, HttpStatus.OK);
+    }
+
     /*@Autowired
     private UtenteRepository utenteRepository;
 

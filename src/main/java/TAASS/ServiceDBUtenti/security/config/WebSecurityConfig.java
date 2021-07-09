@@ -90,9 +90,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         response.addCookie(newCookie);
 
                         response.setCharacterEncoding("UTF-8");
-                        response.setContentType("application/json");
+                        response.setContentType("text/html");
                         response.setStatus(200);
-                        response.getWriter().write(new Gson().toJson(googleUserService.processOAuthPostLogin(oauthUser)));
+                        response.getWriter().write("<b>LOGIN SUCCESSFUL</b>");
                     }
                 });
 
