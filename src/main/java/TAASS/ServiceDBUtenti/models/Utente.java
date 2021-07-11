@@ -1,17 +1,16 @@
 package TAASS.ServiceDBUtenti.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "utente")
+@Table(schema = "public")
 public class Utente {
     //dichiarazione elementi tabella
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name="nome")
@@ -27,7 +26,7 @@ public class Utente {
     private String telefono;
 
     @Column(name="comune_residenza")
-    private long comuneResidenza;
+    private long comuneResidenza;   //comune di residenza
 
     @Column(name = "email", unique=true)
     private String email;
@@ -35,15 +34,29 @@ public class Utente {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "ruolo")
-    private String ruolo;
+    @Column(name = "ruoli")
+    @ElementCollection(fetch = FetchType.EAGER)
+    List<Role> ruoli;
+
+    @Column(name = "iscrizioni")
+    @ElementCollection(fetch = FetchType.EAGER)
+    Set<Long> iscrizioni;
+
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
 
     @Column(name = "comune")
     //@DefaultValue(value = null)
-    private long comune;
+    private long dipendenteDiComune;    //comune del quale sono sindaco o pubblicatore
 
-    public Utente(String nome, String cognome, String cf, String telefono, long comuneResidenza, String email,
-                  String password, String ruolo, long comune) {
+    @Column(name = "picture_url")
+    private String pictureUrl;
+
+    @Column(name = "email_verified")
+    private boolean emailVerified;
+
+    public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long dipendenteDiComune) {
+        this.id = id;
         this.nome = nome;
         this.cognome = cognome;
         this.cf = cf;
@@ -51,15 +64,14 @@ public class Utente {
         this.comuneResidenza = comuneResidenza;
         this.email = email;
         this.password = password;
-        this.ruolo = ruolo;
-        this.comune = comune;
+        this.ruoli = ruolo;
+        this.dipendenteDiComune = dipendenteDiComune;
+        this.iscrizioni = new HashSet<Long>();
     }
 
     public Utente() {
-
     }
 
-    //dichiarazione di tutti i getter e setter
     public Long getId() {
         return id;
     }
@@ -124,19 +136,51 @@ public class Utente {
         this.password = password;
     }
 
-    public String getRuolo() {
-        return ruolo;
+    public List<Role> getRuoli() {
+        return ruoli;
     }
 
-    public void setRuolo(String ruolo) {
-        this.ruolo = ruolo;
+    public void setRuoli(List<Role> ruolo) {
+        this.ruoli = ruolo;
     }
 
-    public long getComune() {
-        return comune;
+    public long getDipendenteDiComune() {
+        return dipendenteDiComune;
     }
 
-    public void setComune(long comune) {
-        this.comune = comune;
+    public void setDipendenteDiComune(long comune) {
+        this.dipendenteDiComune = comune;
+    }
+
+    public Set<Long> getIscrizioni() {
+        return iscrizioni;
+    }
+
+    public void setIscrizioni(Set<Long> iscrizioni) {
+        this.iscrizioni = iscrizioni;
+    }
+
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }
