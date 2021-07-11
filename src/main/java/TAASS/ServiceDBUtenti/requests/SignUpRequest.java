@@ -13,6 +13,7 @@ public class SignUpRequest {
     private String cf;
     private String telefono;
     private Long comuneResidenza;
+    private Long dipendenteDiComune;
     private List<Role> roles;
 
     public String getEmail() {
@@ -77,5 +78,13 @@ public class SignUpRequest {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public Long getDipendenteDiComune() {
+        return dipendenteDiComune;
+    }
+
+    public void setDipendenteDiComune(Long dipendenteDiComune) {
+        this.dipendenteDiComune = dipendenteDiComune;
     }
 }

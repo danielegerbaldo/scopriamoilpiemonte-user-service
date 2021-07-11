@@ -1,20 +1,17 @@
 package TAASS.ServiceDBUtenti.controllers;
 
+import TAASS.ServiceDBUtenti.exception.ForbiddenException;
 import TAASS.ServiceDBUtenti.models.Utente;
 import TAASS.ServiceDBUtenti.repositories.UtenteRepository;
+import TAASS.ServiceDBUtenti.requests.ChangeRoleRequest;
 import TAASS.ServiceDBUtenti.requests.LoginRequest;
 import TAASS.ServiceDBUtenti.requests.SignUpRequest;
 import TAASS.ServiceDBUtenti.response.LoginResponse;
 import TAASS.ServiceDBUtenti.response.UserDto;
 import TAASS.ServiceDBUtenti.services.SecureUserService;
-import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.annotation.RequestScope;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -24,9 +21,11 @@ import java.util.*;
 public class UtenteController {
 
     private SecureUserService userService;
+    private final UtenteRepository  utenteRepository;
 
-    public UtenteController(SecureUserService userService) {
+    public UtenteController(SecureUserService userService, UtenteRepository utenteRepository) {
         this.userService = userService;
+        this.utenteRepository = utenteRepository;
     }
 
     @PostMapping(value = "/login")
@@ -41,36 +40,162 @@ public class UtenteController {
         }
     }
 
+
     @PostMapping(value = "/signUp")
-    public ResponseEntity<Utente> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
+    public ResponseEntity<LoginResponse> signUp(HttpServletRequest requestHeader, @RequestBody SignUpRequest request) throws RuntimeException {
         //registrazione dell'utente
         System.out.println("Registro l'utente: " + request.getEmail());
-        Utente user;
+        LoginResponse response;
         try {
-            user = userService.signUp(request);
+            response = userService.signUp(request);
             System.out.println("Registrazione utente: " + request.getEmail() + " avvenuta con successo");
-            return new ResponseEntity<>(user, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             throw e;
         }
     }
 
     @GetMapping(value = "/utente/getAllUser")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Utente>> getAllUser(HttpServletRequest requestHeader) throws RuntimeException {
 
-       /* System.out.println("**************************************************************************************************************");
+        //X-auth-user-role: header da controllare
+        //AUTH: prendo l'autorizzazione dall'header e verifico che sia admin; questo va a sostituire il "@PreAuthorize("hasRole('ROLE_ADMIN')")"
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        if(!auth.equals("ROLE_ADMIN")){
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
 
-        Enumeration headerNames = requestHeader.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String key = (String) headerNames.nextElement();
-            String value = requestHeader.getHeader(key);
-            System.out.println("HEADER: " + key +" " + value);
-        }*/
+        //System.out.println("Authorization: " + requestHeader);
+        try {
+            return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @PostMapping(value = "/utente/getUsersByIdList")
+    public List<Utente> getUsersByIdList(HttpServletRequest requestHeader, @RequestBody List<Long> ids) {
+
+        /*TODO
+            per ora questo metodo è permesso a qualsiasi sindaco o pubblicatore (oltre che agli amministratori)
+            bisogna verificare che il sindaco sia sindaco del comune dell'evento o che il pubblicatore abbia
+            pubblicato davvero quell'evento
+         */
+        //AUTH: admin, sindaco, pubblicatore
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        if(!(auth.equals("ROLE_ADMIN") || auth.equals("ROLE_MAYOR") || auth.equals("ROLE_PUBLISHER") )){
+            throw new ForbiddenException();
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+        List<Utente> utenti = new ArrayList<Utente>();
+        for (long id : ids) {
+            if (utenteRepository.findById(id).isPresent()) {
+                utenti.add(utenteRepository.findById(id).get());
+            }
+        }
+
+        return utenti;
+    }
+
+    @GetMapping(value = "/utente/getDipendentiDiComune/{idComune}")
+    public ResponseEntity<List<Utente>> getDipendentiDiComune(HttpServletRequest requestHeader, @PathVariable long idComune) throws RuntimeException {
+
+        Utente utenteCorrente=null;
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        //Cerco se chi fa la richiesta e' dipendente del comune
+        if(utenteRepository.findById(idToken).isPresent())
+            utenteCorrente = utenteRepository.findById(idToken).get();
+
+        if(utenteCorrente==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        //Aturorizzo l' admin o il dindaco del comune richiesto
+        if(!(auth.equals("ROLE_ADMIN") || (utenteCorrente.getDipendenteDiComune()==idComune && auth.equals("ROLE_MAYOR")))){
+            throw new ForbiddenException();
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
 
         System.out.println("Authorization: " + requestHeader);
         try {
-            return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
+                return new ResponseEntity<List<Utente>>(utenteRepository.findAllByDipendenteDiComune(idComune), HttpStatus.OK);
+
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @GetMapping(value = "/utente/getNonDipendenti")
+    public ResponseEntity<List<Utente>> getNonDipendenti(HttpServletRequest requestHeader) throws RuntimeException {
+
+        System.out.println(">>>>>/utente/getNonDipendenti");
+
+        Utente utenteCorrente=null;
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        //Cerco se chi fa la richiesta e' dipendente del comune
+        if(utenteRepository.findById(idToken).isPresent())
+            utenteCorrente = utenteRepository.findById(idToken).get();
+
+        if(utenteCorrente==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        //Aturorizzo l' admin o il dindaco del comune richiesto
+        if(!(auth.equals("ROLE_ADMIN") || (auth.equals("ROLE_MAYOR")))){
+            throw new ForbiddenException();
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+
+        System.out.println("Authorization: " + requestHeader);
+        try {
+            List<Utente> utenti = utenteRepository.findNonDipendenti();
+            System.out.println(">>> utenti non dipendenti = " + utenti.size());
+
+            return new ResponseEntity<List<Utente>>(utenteRepository.findNonDipendenti(), HttpStatus.OK);
+
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @PostMapping(value = "/utente/changeRole")
+    public ResponseEntity<Utente> changeRole(HttpServletRequest requestHeader, @RequestBody ChangeRoleRequest request) throws RuntimeException {
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        //AUTH: può accedere solo un admin o sindaco
+        if(!(auth.equals("ROLE_ADMIN") || auth.equals("ROLE_MAYOR"))){
+            throw new ForbiddenException();
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            if(utenteRepository.findById(request.getId()).isPresent()) {
+                Utente utente = utenteRepository.findById(request.getId()).get();
+                utente.setRuoli(request.getRuoli());
+                utenteRepository.save(utente);
+                utente.setPassword(null);
+                return new ResponseEntity<Utente>(utente, HttpStatus.OK);
+            }
+            else
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
+
         } catch (Exception e) {
             throw e;
         }
@@ -89,6 +214,17 @@ public class UtenteController {
 
     }*/
 
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<String> rimuoviTuttiUtenti(HttpServletRequest requestHeader){
+        //AUTH: admin
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        if(!auth.equals("ROLE_ADMIN")){
+            return new ResponseEntity<>("Non sei autorizzato", HttpStatus.FORBIDDEN);
+        }
+        utenteRepository.deleteAll();
+        return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
+    }
+
     @GetMapping(value = "/validateToken")
     public ResponseEntity<UserDto> validateToken(@RequestParam String token) throws RuntimeException {
 
@@ -98,92 +234,99 @@ public class UtenteController {
 
     }
 
-
-    /*@Autowired
-    private UtenteRepository utenteRepository;
-
-    @GetMapping
-    public List<Utente> getAllUtenti(){
-        //System.out.println("restituisco tutti gli utenti");
-        List<Utente> utenti = new ArrayList<>();
-        utenteRepository.findAll().forEach(utenti::add);
-        System.out.println(">richiesta lista utenti, quantita' trovata: " + utenti.size());
-        return utenti;
-    }*/
-    /*@PostMapping
-    public Utente postUtente(@RequestBody Utente utente){
-        Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(),
-                utente.getTelefono(), utente.getComuneResidenza(), utente.getEmail(), utente.getPassword(),
-                utente.getRuolo()));
-        return nuovoUtente;
-    }*/
-    /*
-    @PostMapping
-    public ResponseEntity<Map<String, String>> postUtente(@RequestBody Map<String, String> datiUtente){
-        Utente nuovoUtente = new Utente(datiUtente.get("nome"), datiUtente.get("cognome"), datiUtente.getOrDefault("cf", ""),
-                datiUtente.getOrDefault("tel", ""), 1, datiUtente.get("email"), datiUtente.get("password"),
-                datiUtente.getOrDefault("ruolo", "normale"), Long.parseLong(datiUtente.getOrDefault("comune", "-1").toString()));
-        System.out.println(">registrazione nuovo utente: ");
-        System.out.println("\t>e: " + datiUtente.get("email"));
-        System.out.println("\t>n: " + datiUtente.get("nome"));
-        System.out.println("\t>r: " + datiUtente.getOrDefault("ruolo", "normale"));
-        nuovoUtente = utenteRepository.save(nuovoUtente);
-        Map<String, String> risposta = new HashMap<>();
-        risposta.put("risposta", "registrazione avvenuta con successo");
-        return  new ResponseEntity<Map<String, String>>(risposta, HttpStatus.OK);
-    }
-
-    //questa richiesta dovrà poi essere eliminata quando si sarà implementato spring secure
-    @PostMapping("/login")
-    public ResponseEntity<String> fakeLogin(@RequestBody Map<String, String> richiestaLogin){
-        String email = richiestaLogin.get("email").toString().trim();
-        String password = richiestaLogin.get("password").toString().trim();
-        System.out.println(">richiesta login: p: " + password);
-        System.out.println(">richiesta login: e: " + email);
-        List<Utente> utenti = utenteRepository.findByEmail(email);
-        System.out.println(">utenti trovati: " + utenti.size());
-        Gson gson = new Gson();
-        ResponseEntity<String> responseEntity;
-        if(utenti.size() == 1){
-            responseEntity = new ResponseEntity<>(gson.toJson(utenti.get(0)), HttpStatus.OK);
-        }else{
-            responseEntity = new ResponseEntity<>(gson.toJson(null), HttpStatus.NOT_FOUND);
+    @GetMapping(value = "/utente/getUser/{id}")
+    public ResponseEntity<Utente> getUser(HttpServletRequest requestHeader, @PathVariable long id) throws RuntimeException {
+        // Questo metodo non richiede autorizzazione, TODO: filtrarlo dal gateway
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+        /*String head = headers.nextElement() ;
+        while(head != null){
+            System.out.println("/utente/getUser/{id}: headers = " + head);
+            head = headers.nextElement() ;
+        }*/
+        System.out.println("/utente/getUser/{id}: X-auth-user-id pt2 = " + requestHeader.getHeader("X-auth-user-id"));
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+        System.out.println("/utente/getUser/{id}: X-auth-user-id pt3 = " + idToken);
+        //AUTH: può accedere solo un admin o se l'id calcolato dal token coincide con l'id ricevuto nella richiesta
+        if(!(auth.equals("ROLE_ADMIN") || id == idToken)){
+            throw new ForbiddenException();
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
-        return responseEntity;
-    }
+        System.out.println("/utente/getUser/{id}: superato l'if");
 
-    @DeleteMapping("/deleteAll")
-    public ResponseEntity<String> rimuoviTuttiUtenti(){
-        utenteRepository.deleteAll();
-        return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
-    }
+        System.out.println("Authorization: " + requestHeader);
+        try {
+            if(utenteRepository.findById(id).isPresent())
+                return new ResponseEntity<Utente>(utenteRepository.findById(id).get(), HttpStatus.OK);
+            else
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
 
-    @DeleteMapping("/deleteByID")
-    public ResponseEntity<String> rimuoviUtentePerID(long id){
-        utenteRepository.deleteById(id);
-        return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
-    }
-
-    @GetMapping("/nome/{nome}")     //da aggiungere anche cognome
-    public List<Utente> trovaPerNome(@PathVariable String nome){
-        List<Utente> utenti = utenteRepository.findByNome(nome);
-        return utenti;
-    }
-
-    @PutMapping("/aggiorna/{id}")
-    public ResponseEntity<Utente> aggiornaUtente(@PathVariable("id") long id, @RequestBody Utente utente){
-        Optional<Utente> datiUtente = utenteRepository.findById(id);
-        if(datiUtente.isPresent()){
-            Utente _utente = datiUtente.get();
-
-            _utente.setNome(utente.getNome());
-            _utente.setCognome(utente.getCognome());
-            _utente.setCf(utente.getCf());
-            _utente.setTelefono(utente.getTelefono());
-            _utente.setComuneResidenza(utente.getComuneResidenza());
-            return new ResponseEntity<>(utenteRepository.save(_utente), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            throw e;
         }
-    }*/
+    }
+
+    @PutMapping("/utente/updateUser/{id}")
+    public ResponseEntity<Utente> updateUser(HttpServletRequest requestHeader, @PathVariable(value = "id") Long id,
+                                             @RequestBody Utente utente) throws RuntimeException {
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        if(!utenteRepository.findById(id).isPresent()){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        Utente userToBeUpdated = utenteRepository.findById(id).get();
+
+        //AUTH: Devo essere ADMIN o l'utente stesso
+        if(!(auth.equals("ROLE_ADMIN") || id == idToken)) {
+            throw new ForbiddenException();
+        }
+
+
+        //UPDATING user
+
+        userToBeUpdated.setDipendenteDiComune(utente.getDipendenteDiComune());
+        userToBeUpdated.setCognome(utente.getCognome());
+        userToBeUpdated.setNome(utente.getNome());
+        userToBeUpdated.setEmail(utente.getEmail());
+        userToBeUpdated.setCf(utente.getCf());
+        userToBeUpdated.setComuneResidenza(utente.getComuneResidenza());
+        userToBeUpdated.setTelefono(utente.getTelefono());
+
+        utenteRepository.save(userToBeUpdated);
+
+        return new ResponseEntity<Utente>(userToBeUpdated, HttpStatus.OK);
+    }
+
+    @PutMapping("/utente/setDipendenteDiComune")
+    public ResponseEntity<Utente> setDipendenteDiComune(HttpServletRequest requestHeader, @RequestParam Long idUtente,
+                                             @RequestParam Long idComune) throws RuntimeException {
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+        long comuneDipendente = requestHeader.getHeader("X-auth-user-comune-dipendente-id")!=null?Long.parseLong(requestHeader.getHeader("X-auth-user-comune-dipendente-id")):-1;
+
+        if(!utenteRepository.findById(idUtente).isPresent()){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        Utente userToBeUpdated = utenteRepository.findById(idUtente).get();
+
+
+        //AUTH: Devo essere ADMIN o il sindaco del comune da impostare
+        if(!(auth.equals("ROLE_ADMIN") || (auth.equals("ROLE_MAYOR") && comuneDipendente==idComune))) {
+            throw new ForbiddenException();
+        }
+
+
+        //UPDATING user
+
+        userToBeUpdated.setDipendenteDiComune(idComune);
+        utenteRepository.save(userToBeUpdated);
+
+        return new ResponseEntity<Utente>(userToBeUpdated, HttpStatus.OK);
+    }
+
 }

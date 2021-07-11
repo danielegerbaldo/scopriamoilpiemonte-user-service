@@ -28,7 +28,7 @@ public class JwtTokenProviderService implements IJwtTokenProviderService {
 
     private String secretKey = "MY_SECRET_KEY";     //imposto la mia chiave
 
-    private long validityInMilliseconds = 3600000; // 1h; dirata della validità del token
+    private long validityInMilliseconds = 3600000; // 1h; durata della validità del token
 
     private MyUserDetailsService myUserDetailsService;
 
