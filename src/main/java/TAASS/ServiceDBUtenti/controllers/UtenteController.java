@@ -132,6 +132,45 @@ public class UtenteController {
         }
     }
 
+    @GetMapping(value = "/utente/getNonDipendenti")
+    public ResponseEntity<List<Utente>> getNonDipendenti(HttpServletRequest requestHeader) throws RuntimeException {
+
+        System.out.println(">>>>>/utente/getNonDipendenti");
+
+        Utente utenteCorrente=null;
+
+        String auth = requestHeader.getHeader("X-auth-user-role");
+        Enumeration<String> headers = requestHeader.getHeaderNames();
+
+        long idToken = Long.parseLong(requestHeader.getHeader("X-auth-user-id"));
+
+        //Cerco se chi fa la richiesta e' dipendente del comune
+        if(utenteRepository.findById(idToken).isPresent())
+            utenteCorrente = utenteRepository.findById(idToken).get();
+
+        if(utenteCorrente==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        //Aturorizzo l' admin o il dindaco del comune richiesto
+        if(!(auth.equals("ROLE_ADMIN") || (auth.equals("ROLE_MAYOR")))){
+            throw new ForbiddenException();
+            //return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+
+
+        System.out.println("Authorization: " + requestHeader);
+        try {
+            List<Utente> utenti = utenteRepository.findNonDipendenti();
+            System.out.println(">>> utenti non dipendenti = " + utenti.size());
+
+            return new ResponseEntity<List<Utente>>(utenteRepository.findNonDipendenti(), HttpStatus.OK);
+
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     @PostMapping(value = "/utente/changeRole")
     public ResponseEntity<Utente> changeRole(HttpServletRequest requestHeader, @RequestBody ChangeRoleRequest request) throws RuntimeException {
 
@@ -290,61 +329,4 @@ public class UtenteController {
         return new ResponseEntity<Utente>(userToBeUpdated, HttpStatus.OK);
     }
 
-    /*@Autowired
-    private UtenteRepository utenteRepository;
-
-    @GetMapping
-    public List<Utente> getAllUtenti(){
-        //System.out.println("restituisco tutti gli utenti");
-        List<Utente> utenti = new ArrayList<>();
-        utenteRepository.findAll().forEach(utenti::add);
-        System.out.println(">richiesta lista utenti, quantita' trovata: " + utenti.size());
-        return utenti;
-    }*/
-    /*@PostMapping
-    public Utente postUtente(@RequestBody Utente utente){
-        Utente nuovoUtente = utenteRepository.save(new Utente(utente.getNome(), utente.getCognome(), utente.getCf(),
-                utente.getTelefono(), utente.getComuneResidenza(), utente.getEmail(), utente.getPassword(),
-                utente.getRuolo()));
-        return nuovoUtente;
-    }*/
-    /*
-    @PostMapping
-    public ResponseEntity<Map<String, String>> postUtente(@RequestBody Map<String, String> datiUtente){
-        Utente nuovoUtente = new Utente(datiUtente.get("nome"), datiUtente.get("cognome"), datiUtente.getOrDefault("cf", ""),
-                datiUtente.getOrDefault("tel", ""), 1, datiUtente.get("email"), datiUtente.get("password"),
-                datiUtente.getOrDefault("ruolo", "normale"), Long.parseLong(datiUtente.getOrDefault("comune", "-1").toString()));
-        System.out.println(">registrazione nuovo utente: ");
-        System.out.println("\t>e: " + datiUtente.get("email"));
-        System.out.println("\t>n: " + datiUtente.get("nome"));
-        System.out.println("\t>r: " + datiUtente.getOrDefault("ruolo", "normale"));
-        nuovoUtente = utenteRepository.save(nuovoUtente);
-        Map<String, String> risposta = new HashMap<>();
-        risposta.put("risposta", "registrazione avvenuta con successo");
-        return  new ResponseEntity<Map<String, String>>(risposta, HttpStatus.OK);
-    }
-
-
-    @DeleteMapping("/deleteByID")
-    public ResponseEntity<String> rimuoviUtentePerID(long id){
-        utenteRepository.deleteById(id);
-        return new ResponseEntity<>("Tutti gli utenti sono stati cancellati con successo", HttpStatus.OK);
-    }
-
-    @PutMapping("/aggiorna/{id}")
-    public ResponseEntity<Utente> aggiornaUtente(@PathVariable("id") long id, @RequestBody Utente utente){
-        Optional<Utente> datiUtente = utenteRepository.findById(id);
-        if(datiUtente.isPresent()){
-            Utente _utente = datiUtente.get();
-
-            _utente.setNome(utente.getNome());
-            _utente.setCognome(utente.getCognome());
-            _utente.setCf(utente.getCf());
-            _utente.setTelefono(utente.getTelefono());
-            _utente.setComuneResidenza(utente.getComuneResidenza());
-            return new ResponseEntity<>(utenteRepository.save(_utente), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }*/
 }

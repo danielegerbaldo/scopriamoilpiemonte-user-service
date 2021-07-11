@@ -85,7 +85,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         String cookieValue = googleUserService.processOAuthPostLogin(oauthUser).getAccessToken();
                         Cookie newCookie = new Cookie(cookieName, cookieValue);
                         newCookie.setPath(contextPath);
-                        newCookie.setHttpOnly(true);
+                        //newCookie.setHttpOnly(true);
                         newCookie.setMaxAge(3600);
                         response.addCookie(newCookie);
 
