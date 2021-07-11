@@ -1,10 +1,9 @@
 package TAASS.ServiceDBUtenti.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(schema = "public")
@@ -39,11 +38,24 @@ public class Utente {
     @ElementCollection(fetch = FetchType.EAGER)
     List<Role> ruoli;
 
+    @Column(name = "iscrizioni")
+    @ElementCollection(fetch = FetchType.EAGER)
+    Set<Long> iscrizioni;
+
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+
     @Column(name = "comune")
     //@DefaultValue(value = null)
-    private long comune;    //comune del quale sono sindaco o pubblicatore
+    private long dipendenteDiComune;    //comune del quale sono sindaco o pubblicatore
 
-    public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long comune) {
+    @Column(name = "picture_url")
+    private String pictureUrl;
+
+    @Column(name = "email_verified")
+    private boolean emailVerified;
+
+    public Utente(Long id, String nome, String cognome, String cf, String telefono, long comuneResidenza, String email, String password, List<Role> ruolo, long dipendenteDiComune) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -53,7 +65,8 @@ public class Utente {
         this.email = email;
         this.password = password;
         this.ruoli = ruolo;
-        this.comune = comune;
+        this.dipendenteDiComune = dipendenteDiComune;
+        this.iscrizioni = new HashSet<Long>();
     }
 
     public Utente() {
@@ -131,11 +144,43 @@ public class Utente {
         this.ruoli = ruolo;
     }
 
-    public long getComune() {
-        return comune;
+    public long getDipendenteDiComune() {
+        return dipendenteDiComune;
     }
 
-    public void setComune(long comune) {
-        this.comune = comune;
+    public void setDipendenteDiComune(long comune) {
+        this.dipendenteDiComune = comune;
+    }
+
+    public Set<Long> getIscrizioni() {
+        return iscrizioni;
+    }
+
+    public void setIscrizioni(Set<Long> iscrizioni) {
+        this.iscrizioni = iscrizioni;
+    }
+
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

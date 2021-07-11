@@ -1,9 +1,20 @@
 package TAASS.ServiceDBUtenti.response;
 
 public class LoginResponse {
+    private long id;
     private String userName;
     private String email;
     private String accessToken;
+
+    public LoginResponse() {
+    }
+
+    public LoginResponse(long id, String userName, String email, String accessToken) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+        this.accessToken = accessToken;
+    }
 
     public String getUserName() {
         return userName;
@@ -27,5 +38,13 @@ public class LoginResponse {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }
