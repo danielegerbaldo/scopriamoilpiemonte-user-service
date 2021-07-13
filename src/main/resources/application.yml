@@ -6,7 +6,7 @@ spring:
           google:
             clientId: 9252713990-stvnud7tt3acsvc6vetkk06k1a0ju0dg.apps.googleusercontent.com
             clientSecret: 5c8uGskTCkEIU5sxLIseNLov
-            redirect-uri-template: http://localhost/login/oauth2/code/google
+            redirect-uri-template: http://93-41-149-178.ip82.fastwebnet.it:30193/login/oauth2/code/google
             scope:
               - email
               - profile
