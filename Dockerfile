@@ -11,7 +11,7 @@ RUN java -Djarmode=layertools -jar utenti-0.0.1-SNAPSHOT.jar extract
 #ENTRYPOINT ["java","-jar", "publish-docker-image-to-docker-hub-1.0-SNAPSHOT.jar"]
 
 
-FROM openjdk:11-jre-slim
+FROM arm32v7/openjdk:11.0.3-slim
 WORKDIR application
 COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
